@@ -6,9 +6,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 import sys
 from backup_manager import create_backup_window
-from trackpad.super_curtains import get_current_super_curtains_values, set_super_curtains_values, create_super_curtains_window
-from trackpad.right_click_zone import get_current_right_click_values, set_right_click_values, create_right_click_window
-
 
 # 레지스트리 경로 및 키
 registry_path = r'SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad'
@@ -204,6 +201,10 @@ def create_curtains_window():
 # 저장 시, 유저에게 백업을 할지 묻는 함수
 def save_curtain_values_with_prompt():
     response = prompt_for_save()
+
+    # 지연 import 방식으로 순환 참조 방지
+    from trackpad.super_curtains import get_current_super_curtains_values, set_super_curtains_values
+    from trackpad.right_click_zone import get_current_right_click_values, set_right_click_values
 
     if response is None:
         # "Cancel editing"

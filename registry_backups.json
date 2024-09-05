@@ -1,0 +1,29 @@
+[
+    {
+        "Curtains": {
+            "CurtainTop": 0,
+            "CurtainLeft": 0,
+            "CurtainRight": 0,
+            "CurtainBottom": 0
+        },
+        "Super Curtains": {
+            "SuperCurtainTop": 0,
+            "SuperCurtainLeft": 0,
+            "SuperCurtainRight": 0,
+            "SuperCurtainBottom": 0
+        },
+        "Right-click Zone": {
+            "RightClickZoneWidth": null,
+            "RightClickZoneHeight": null
+        }
+    },
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+]
