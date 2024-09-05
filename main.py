@@ -2,12 +2,30 @@ import tkinter as tk
 from tkinter import messagebox
 import os
 import sys
+import ctypes
 from trackpad.curtains import get_current_curtains_values, set_curtains_values, create_curtains_window
 from trackpad.super_curtains import get_current_super_curtains_values, set_super_curtains_values, create_super_curtains_window
 from trackpad.right_click_zone import get_current_right_click_values, set_right_click_values, create_right_click_window
 from backup_manager import create_backup_window, initialize_reset_slot
 
 root = None  # 전역 변수를 제대로 처리하기 위해 root를 미리 선언
+
+# 관리자 권한 확인 함수
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+# 관리자 권한을 요청하는 함수
+def request_admin():
+    if not is_admin():
+        try:
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            sys.exit()  # 권한 요청을 거부하면 프로그램 종료
+        except Exception as e:
+            print(f"Admin rights required: {e}")
+            sys.exit()
 
 # 프로그램이 처음 실행되는지 확인하는 함수
 def is_first_run():
@@ -59,4 +77,5 @@ def main_window():
     root.mainloop()
 
 if __name__ == "__main__":
+    request_admin()
     main_window()

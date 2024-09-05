@@ -36,7 +36,7 @@ MAX_CURTAIN_TOP_CM = 5  # 50mm = 5cm
 def get_current_curtains_values():
     curtain_values = {}
     try:
-        reg_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, registry_path, 0, winreg.KEY_READ)
+        reg_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, registry_path, 0, winreg.KEY_READ)
         for key in curtain_keys:
             try:
                 value, reg_type = winreg.QueryValueEx(reg_key, key)
@@ -51,7 +51,7 @@ def get_current_curtains_values():
 # 레지스트리 값을 설정하는 함수 (값이 없으면 생성)
 def set_curtains_values(curtain_values):
     try:
-        reg_key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, registry_path)  # 키 생성 또는 열기
+        reg_key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, registry_path)  # 키 생성 또는 열기
         for key, value in curtain_values.items():
             winreg.SetValueEx(reg_key, key, 0, winreg.REG_DWORD, int(value))
         winreg.CloseKey(reg_key)
