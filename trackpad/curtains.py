@@ -1,13 +1,19 @@
 import tkinter as tk
 from tkinter import ttk
 import winreg
-from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
+from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # 레지스트리 경로 및 키
 registry_path = r'SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad'
 curtain_keys = ['CurtainTop', 'CurtainLeft', 'CurtainRight', 'CurtainBottom']
+
+# 트랙패드 위치 및 크기 설정 (이미지에서 트랙패드 영역)
+TRACKPAD_X = 145   # 트랙패드의 x 좌표 (이미지의 픽셀 단위로)
+TRACKPAD_Y = 245   # 트랙패드의 y 좌표 (이미지의 픽셀 단위로)
+TRACKPAD_WIDTH = 320  # 트랙패드의 너비
+TRACKPAD_HEIGHT = 235  # 트랙패드의 높이
 
 # 현재 커튼 레지스트리 값을 읽는 함수
 def get_current_curtains_values():
@@ -38,22 +44,63 @@ def set_curtains_values(curtain_values):
 # 이미지를 업데이트하는 함수
 def update_image():
     ax.clear()
-    
-    # 커튼 구역을 설정
-    curtain_width = (slider_left.get() + slider_right.get()) / 2
-    curtain_height = slider_top.get()
 
     # 원본 이미지를 그려줍니다
     ax.imshow(img)
+
+    # 커튼 구역을 설정 (트랙패드 영역에서만)
+    curtain_top = slider_top.get()
+    curtain_left = slider_left.get()
+    curtain_right = slider_right.get()
+
+    # 트랙패드의 노란색 non-curtain 영역 그리기 (노란색으로 기본 배경)
+    rect_non_curtain = plt.Rectangle((TRACKPAD_X, TRACKPAD_Y), TRACKPAD_WIDTH, TRACKPAD_HEIGHT, 
+                                     linewidth=1, edgecolor=None, facecolor='yellow', alpha=0.5)
+    ax.add_patch(rect_non_curtain)
+
+    # # 커튼 영역 그리기 (초록색으로 커튼 영역을 확장)
+    # left_x = TRACKPAD_X + curtain_left  # 왼쪽 커튼 시작 지점
+    # right_x = TRACKPAD_X + TRACKPAD_WIDTH - curtain_right  # 오른쪽 커튼 시작 지점
+    # top_y = TRACKPAD_Y - curtain_top  # 상단 커튼 지점
+
+    left_curtain_x = TRACKPAD_X  # 왼쪽 커튼 끝 지점
+    left_curtain_y = TRACKPAD_Y  # 왼쪽 커튼 끝 지점
+    left_curtain_width = curtain_left
+    left_curtain_height = TRACKPAD_HEIGHT
     
-    # 그림에 커튼 영역(민감도) 표시
-    rect = plt.Rectangle((0.5 - curtain_width/2000, 0.5 - curtain_height/1000),
-                         curtain_width / 1000, curtain_height / 1000,
-                         linewidth=2, edgecolor='blue', facecolor='green', alpha=0.3)
-    ax.add_patch(rect)
+    right_curtain_x = TRACKPAD_X + TRACKPAD_WIDTH  # 오른쪽 커튼 시작 지점
+    right_curtain_y = TRACKPAD_Y  # 오른쪽 커튼 시작 지점
+    right_curtain_width = -curtain_right
+    right_curtain_height = TRACKPAD_HEIGHT
+    
+    top_curtain_x = TRACKPAD_X  # 상단 커튼 시작 지점
+    top_curtain_y = TRACKPAD_Y  # 상단 커튼 시작 지점
+    top_curtain_width = TRACKPAD_WIDTH
+    top_curtain_height = curtain_top
+
+    # 커튼이 적용된 사각형을 초록색으로 그리기
+    left_curtain = plt.Rectangle((left_curtain_x, left_curtain_y), left_curtain_width, left_curtain_height,
+                                    linewidth=1, edgecolor=None, facecolor='green', alpha=0.5)
+    right_curtain = plt.Rectangle((right_curtain_x, right_curtain_y), right_curtain_width, right_curtain_height,
+                                    linewidth=1, edgecolor=None, facecolor='green', alpha=0.5)
+    top_curtain = plt.Rectangle((top_curtain_x, top_curtain_y), top_curtain_width, top_curtain_height,
+                                    linewidth=1, edgecolor=None, facecolor='green', alpha=0.5)
+    
+    ax.add_patch(left_curtain)
+    ax.add_patch(right_curtain)
+    ax.add_patch(top_curtain)
+
+    # 좌표축 제거
+    plt.gca().axes.xaxis.set_visible(False)
+    plt.gca().axes.yaxis.set_visible(False)
     
     # 이미지 업데이트
     canvas.draw()
+
+    # 슬라이더 옆의 숫자 업데이트
+    label_top_value.config(text=f"{int(slider_top.get())}")
+    label_left_value.config(text=f"{int(slider_left.get())}")
+    label_right_value.config(text=f"{int(slider_right.get())}")
 
 # 커튼 설정 GUI 창을 생성하는 함수
 def create_curtains_window():
@@ -64,29 +111,35 @@ def create_curtains_window():
     global ax, canvas, img
     fig, ax = plt.subplots(figsize=(6, 4))
 
-    img = plt.imread("trackpad/gb4p16.jpg")  # 사용자 이미지 파일 로드
+    img = plt.imread("trackpad/gb4p16_trackpad.jpg")  # 사용자 이미지 파일 로드
     ax.imshow(img)
 
     canvas = FigureCanvasTkAgg(fig, master=sub_window)
     canvas.get_tk_widget().pack()
 
-    # 슬라이더 설정
-    global slider_top, slider_left, slider_right
+    # 슬라이더 설정 및 숫자 표시
+    global slider_top, slider_left, slider_right, label_top_value, label_left_value, label_right_value
 
     label_top = tk.Label(sub_window, text="Curtain Top (Height)")
     label_top.pack(pady=5)
-    slider_top = ttk.Scale(sub_window, from_=0, to=1000, orient='horizontal', command=lambda x: update_image())
+    slider_top = ttk.Scale(sub_window, from_=0, to=TRACKPAD_HEIGHT, orient='horizontal', command=lambda x: update_image())
     slider_top.pack(pady=5)
+    label_top_value = tk.Label(sub_window, text="0")  # 슬라이더 옆에 숫자 표시
+    label_top_value.pack(pady=5)
 
     label_left = tk.Label(sub_window, text="Curtain Left (Width)")
     label_left.pack(pady=5)
-    slider_left = ttk.Scale(sub_window, from_=0, to=1000, orient='horizontal', command=lambda x: update_image())
+    slider_left = ttk.Scale(sub_window, from_=0, to=TRACKPAD_WIDTH//2, orient='horizontal', command=lambda x: update_image())
     slider_left.pack(pady=5)
+    label_left_value = tk.Label(sub_window, text="0")  # 슬라이더 옆에 숫자 표시
+    label_left_value.pack(pady=5)
 
     label_right = tk.Label(sub_window, text="Curtain Right (Width)")
     label_right.pack(pady=5)
-    slider_right = ttk.Scale(sub_window, from_=0, to=1000, orient='horizontal', command=lambda x: update_image())
+    slider_right = ttk.Scale(sub_window, from_=0, to=TRACKPAD_WIDTH//2, orient='horizontal', command=lambda x: update_image())
     slider_right.pack(pady=5)
+    label_right_value = tk.Label(sub_window, text="0")  # 슬라이더 옆에 숫자 표시
+    label_right_value.pack(pady=5)
 
     # 초기 슬라이더 값을 현재 레지스트리 값으로 설정
     curtain_values = get_current_curtains_values()
