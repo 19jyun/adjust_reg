@@ -6,11 +6,11 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 import sys
 from backup_manager import create_backup_window
-from ui_style import UIStyle
+from new_ui_style import NewUIStyle
 
 # UI 스타일 적용
-scale_factor = UIStyle.get_scaling_factor()
-ui_style = UIStyle(scale_factor)
+scale_factor = NewUIStyle.get_scaling_factor()
+ui_style = NewUIStyle(scale_factor)
 
 # 레지스트리 경로 및 키
 registry_path = r'SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad'
@@ -65,7 +65,7 @@ def prompt_for_save():
     response = messagebox.askyesnocancel("Save Registry", "Would you like to save the current registry before saving any edits?")
     return response
 
-# 레지스트리 값을 백업하는 함수 (main.py에서 백업 시스템 사용)
+# 레지스트리 값을 백업하는 함수
 def save_registry_before_edit():
     print("Registry backup started.")
 
@@ -86,12 +86,12 @@ def update_image():
     curtain_left_px = curtain_left * CM_TO_PX_WIDTH
     curtain_right_px = curtain_right * CM_TO_PX_WIDTH
 
-    # 트랙패드의 노란색 non-curtain 영역 그리기 (노란색으로 기본 배경)
+    # 트랙패드의 노란색 non-curtain 영역 그리기 (노란색 배경)
     rect_non_curtain = plt.Rectangle((TRACKPAD_X, TRACKPAD_Y), TRACKPAD_WIDTH_PX, TRACKPAD_HEIGHT_PX, 
                                      linewidth=1, edgecolor=None, facecolor='yellow', alpha=0.5)
     ax.add_patch(rect_non_curtain)
 
-    # 커튼 영역 그리기 (초록색으로 커튼 영역을 확장)
+    # 커튼 영역 그리기 (초록색 영역)
     left_curtain = plt.Rectangle((TRACKPAD_X, TRACKPAD_Y), curtain_left_px, TRACKPAD_HEIGHT_PX,
                                  linewidth=1, edgecolor=None, facecolor='green', alpha=0.5)
     right_curtain = plt.Rectangle((TRACKPAD_X + TRACKPAD_WIDTH_PX, TRACKPAD_Y), -curtain_right_px, TRACKPAD_HEIGHT_PX,
@@ -121,7 +121,14 @@ def update_slider_from_entry(entry, slider, max_value):
     except ValueError:
         pass  # 유효하지 않은 값일 경우 무시
 
-# 포커스를 벗어나거나 Enter 키를 누르면 슬라이더 값을 업데이트 (완료된 입력에 대해서만)
+# 슬라이더에서 값이 변하면 입력 필드(Entry)를 업데이트하고 이미지도 즉시 업데이트
+def update_entry_from_slider(slider, entry):
+    value = slider.get()
+    entry.delete(0, tk.END)
+    entry.insert(0, f"{value:.2f}")  # 슬라이더 값을 0.00 형식으로 입력 필드에 반영
+    update_image()  # 이미지 즉시 업데이트
+
+# 포커스를 벗어나거나 Enter 키를 누르면 슬라이더 값을 업데이트하고 이미지도 즉시 업데이트
 def on_entry_complete(entry, slider, max_value):
     update_slider_from_entry(entry, slider, max_value)
     format_entry(entry)  # 0.00 형식으로 포맷
@@ -136,73 +143,60 @@ def format_entry(entry):
         entry.delete(0, tk.END)
         entry.insert(0, "0.00")  # 기본값으로 리셋
 
-# 슬라이더에서 값이 변하면 입력 필드(Entry) 업데이트
-def update_entry_from_slider(slider, entry):
-    value = slider.get()
-    entry.delete(0, tk.END)
-    entry.insert(0, f"{value:.2f}")  # 슬라이더 값을 0.00 형식으로 포맷
-    update_image()
-
 # 커튼 설정 GUI 창을 생성하는 함수
 def create_curtains_window():
-    sub_window = tk.Toplevel()
-    sub_window.title("Curtains Settings")
+    # 스크롤 가능한 창을 생성
+    scrollable_frame = ui_style.create_scrollable_window("Curtains Settings")
 
-    # UI 스타일로 창 크기 설정
-    sub_window.geometry(ui_style.get_window_geometry())
-    sub_window.resizable(False, False)
-    sub_window.overrideredirect(True)
-
-    # 패딩 및 스타일 값 적용
     padding_x, padding_y = ui_style.get_padding()
 
     # 이미지 표시할 matplotlib 설정
     global ax, canvas, img
-    fig, ax = plt.subplots(figsize=(ui_style.window_width / 200, ui_style.window_height / 300))
+    fig, ax = plt.subplots(figsize=((ui_style.window_width / ui_style.scale_factor) / 180, (ui_style.window_height / ui_style.scale_factor) / 250))
     img = plt.imread("trackpad/gb4p16_trackpad.jpg")  # 사용자 이미지 파일 로드
-    ax.imshow(img, aspect='auto')  # 이미지를 창에 맞게 조정
+    ax.imshow(img, aspect='auto')
     ax.axis('off')  # 이미지 축 제거
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)  # 이미지를 창에 꽉 채우기
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)
     ax.set_position([0, 0, 1, 1])  # 이미지를 창에 꽉 채우기
-    canvas = FigureCanvasTkAgg(fig, master=sub_window)
+    canvas = FigureCanvasTkAgg(fig, master=scrollable_frame)
     canvas.get_tk_widget().pack(padx=padding_x, pady=padding_y)
 
     global entry_top, entry_left, entry_right
 
-    # 슬라이더 설정 및 숫자 입력
-    label_top = tk.Label(sub_window, text="Curtain Top (Height, cm)")
+    # 슬라이더 및 입력 필드
+    label_top = tk.Label(scrollable_frame, text="Curtain Top (Height, cm)")
     ui_style.apply_label_style(label_top)
     label_top.pack(pady=padding_y)
-    slider_top = ttk.Scale(sub_window, from_=0, to=MAX_CURTAIN_TOP_CM, orient='horizontal', length=ui_style.slider_length, 
+    slider_top = ttk.Scale(scrollable_frame, from_=0, to=MAX_CURTAIN_TOP_CM, orient='horizontal', length=ui_style.slider_length, 
                            command=lambda x: update_entry_from_slider(slider_top, entry_top))
     slider_top.pack(pady=padding_y)
-    entry_top = tk.Entry(sub_window, justify='center')
+    entry_top = tk.Entry(scrollable_frame, justify='center')
     ui_style.apply_entry_style(entry_top)
     entry_top.insert(0, "0.00")
     entry_top.pack(pady=padding_y)
     entry_top.bind("<FocusOut>", lambda event: on_entry_complete(entry_top, slider_top, MAX_CURTAIN_TOP_CM))
     entry_top.bind("<Return>", lambda event: on_entry_complete(entry_top, slider_top, MAX_CURTAIN_TOP_CM))
 
-    label_left = tk.Label(sub_window, text="Curtain Left (Width, cm)")
+    label_left = tk.Label(scrollable_frame, text="Curtain Left (Width, cm)")
     ui_style.apply_label_style(label_left)
     label_left.pack(pady=padding_y)
-    slider_left = ttk.Scale(sub_window, from_=0, to=MAX_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', length=ui_style.slider_length, 
+    slider_left = ttk.Scale(scrollable_frame, from_=0, to=MAX_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', length=ui_style.slider_length, 
                             command=lambda x: update_entry_from_slider(slider_left, entry_left))
     slider_left.pack(pady=padding_y)
-    entry_left = tk.Entry(sub_window, justify='center')
+    entry_left = tk.Entry(scrollable_frame, justify='center')
     ui_style.apply_entry_style(entry_left)
     entry_left.insert(0, "0.00")
     entry_left.pack(pady=padding_y)
     entry_left.bind("<FocusOut>", lambda event: on_entry_complete(entry_left, slider_left, MAX_CURTAIN_LEFT_RIGHT_CM))
     entry_left.bind("<Return>", lambda event: on_entry_complete(entry_left, slider_left, MAX_CURTAIN_LEFT_RIGHT_CM))
 
-    label_right = tk.Label(sub_window, text="Curtain Right (Width, cm)")
+    label_right = tk.Label(scrollable_frame, text="Curtain Right (Width, cm)")
     ui_style.apply_label_style(label_right)
     label_right.pack(pady=padding_y)
-    slider_right = ttk.Scale(sub_window, from_=0, to=MAX_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', length=ui_style.slider_length, 
+    slider_right = ttk.Scale(scrollable_frame, from_=0, to=MAX_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', length=ui_style.slider_length, 
                              command=lambda x: update_entry_from_slider(slider_right, entry_right))
     slider_right.pack(pady=padding_y)
-    entry_right = tk.Entry(sub_window, justify='center')
+    entry_right = tk.Entry(scrollable_frame, justify='center')
     ui_style.apply_entry_style(entry_right)
     entry_right.insert(0, "0.00")
     entry_right.pack(pady=padding_y)
@@ -216,14 +210,14 @@ def create_curtains_window():
     slider_right.set(curtain_values.get('CurtainRight', 0) / 1000)  # mm에서 cm로 변환하여 설정
 
     # Save와 Back 버튼을 같은 행에 배치
-    frame_buttons = tk.Frame(sub_window)
+    frame_buttons = tk.Frame(scrollable_frame)
     frame_buttons.pack(pady=padding_y)
 
     btn_save = tk.Button(frame_buttons, text="Save", command=lambda: save_curtain_values_with_prompt())
     ui_style.apply_button_style(btn_save)
     btn_save.grid(row=0, column=0, padx=padding_x)
 
-    btn_back = tk.Button(frame_buttons, text="Back", command=sub_window.destroy)
+    btn_back = tk.Button(frame_buttons, text="Back", command=lambda: scrollable_frame.winfo_toplevel().destroy())
     ui_style.apply_button_style(btn_back)
     btn_back.grid(row=0, column=1, padx=padding_x)
 
@@ -231,19 +225,12 @@ def create_curtains_window():
 def save_curtain_values_with_prompt():
     response = prompt_for_save()
 
-    # 지연 import 방식으로 순환 참조 방지
-    from trackpad.super_curtains import get_current_super_curtains_values, set_super_curtains_values
-    from trackpad.right_click_zone import get_current_right_click_values, set_right_click_values
-
     if response is None:
-        # "Cancel editing"
         print("Editing canceled.")
     elif response:
-        # "Edit after saving"
-        create_backup_window(set_curtains_values, set_super_curtains_values, set_right_click_values, get_current_curtains_values, get_current_super_curtains_values, get_current_right_click_values)
+        create_backup_window(set_curtains_values, get_current_curtains_values)
         save_curtain_values()
     else:
-        # "Edit without saving"
         save_curtain_values()
 
 # 커튼 레지스트리 값을 저장하는 함수
