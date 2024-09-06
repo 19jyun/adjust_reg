@@ -9,7 +9,7 @@ from tkinter import messagebox
 BACKUP_FILE_PATH = "registry_backups.json"
 
 # 10개의 백업 슬롯을 위한 리스트
-backups = [{} for _ in range(10)]
+backups = [{} for _ in range(11)]
 restore_buttons = []  # Restore 버튼들을 저장할 리스트
 
 # [Detail] 버튼 클릭 시 백업 내용을 보여주는 함수
@@ -94,17 +94,29 @@ def create_backup_window(set_curtains_values, set_super_curtains_values, set_rig
     backup_window = tk.Toplevel()
     backup_window.title("Registry Backup Manager")
 
+    from main import window_width, window_height, position_right, position_down
+
+    backup_window.geometry(f"{window_width}x{window_height}+{position_right}+{position_down}")
+    backup_window.resizable(False, False)
+    backup_window.overrideredirect(True)
+
     global restore_buttons
     restore_buttons = []  # 버튼 리스트 초기화
 
+    # 창 크기에 비례한 패딩 값 계산
+    padding_x = int(window_width * 0.02)  # 가로 패딩은 창 너비의 2%
+    padding_y = int(window_height * 0.01)  # 세로 패딩은 창 높이의 1%
+    
     # Slot 0을 "default"로 표시하며 모든 값을 0으로 초기화
     default_button = tk.Button(backup_window, text="Default", 
                                command=lambda: restore_registry(0, set_curtains_values, set_super_curtains_values, set_right_click_values))
-    default_button.grid(row=0, column=0, padx=10, pady=5)
+    default_button.grid(row=0, column=0, padx=padding_x, pady=padding_y)
 
     default_restore_button = tk.Button(backup_window, text="Restore", 
                                        command=lambda: restore_registry(0, set_curtains_values, set_super_curtains_values, set_right_click_values))
-    default_restore_button.grid(row=0, column=1, padx=10, pady=5)
+    default_restore_button.grid(row=0, column=1, padx=padding_x, pady=padding_y)
+
+    
 
     restore_buttons.append(default_restore_button)  # Slot 0의 Restore 버튼 추가
     # Slot 1~9 버튼 추가 (Backup, Restore, Detail)
@@ -118,13 +130,16 @@ def create_backup_window(set_curtains_values, set_super_curtains_values, set_rig
 
         restore_button = tk.Button(backup_window, text="Restore", 
                                    command=lambda slot=i: restore_registry(slot, set_curtains_values, set_super_curtains_values, set_right_click_values))
-        restore_button.grid(row=i, column=1, padx=10, pady=5)
+        restore_button.grid(row=i, column=1, padx=padding_x, pady=padding_y)
 
         detail_button = tk.Button(backup_window, text="Detail", 
                                   command=lambda slot=i: show_details(slot))
-        detail_button.grid(row=i, column=2, padx=10, pady=5)
+        detail_button.grid(row=i, column=2, padx=padding_x, pady=padding_y)
 
         restore_buttons.append(restore_button)  # Restore 버튼을 리스트에 추가
+
+    btn_back = tk.Button(backup_window, text="Back", command=backup_window.destroy)
+    btn_back.grid(row=11, column=1, padx=padding_x, pady=padding_y, columnspan=2)  # Back 버튼을 마지막에 추가    
 
     update_buttons()  # 버튼 상태 초기화
 

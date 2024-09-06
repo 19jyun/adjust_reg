@@ -5,17 +5,17 @@ import sys
 import ctypes
 from trackpad.curtains import get_current_curtains_values, set_curtains_values, create_curtains_window
 from trackpad.super_curtains import get_current_super_curtains_values, set_super_curtains_values, create_super_curtains_window
-from trackpad.right_click_zone import get_current_right_click_values, set_right_click_values, create_right_click_window
+from trackpad.right_click_zone import get_current_right_click_values, set_right_clicks_values, create_right_click_window
 from backup_manager import create_backup_window, initialize_reset_slot
 from win32api import GetMonitorInfo, MonitorFromPoint
 
-window_width, window_height, position_right, position_down, screen_width, screen_height = 0, 0, 0, 0, 0, 0
-
-root = None  # 전역 변수를 제대로 처리하기 위해 root를 미리 선언
 
 def get_taskbar_height():
     user32 = ctypes.windll.user32
     # 전체 화면 해상도
+    
+    global screen_width, screen_height
+    
     screen_width = user32.GetSystemMetrics(0)
     screen_height = user32.GetSystemMetrics(1)
 
@@ -25,6 +25,25 @@ def get_taskbar_height():
 
     taskbar_height = screen_height - work_area[3]
     return taskbar_height
+
+
+root = None  # 전역 변수를 제대로 처리하기 위해 root를 미리 선언
+
+# 화면의 너비와 높이 가져오기
+screen_width = 0
+screen_height = 0
+
+taskbar = get_taskbar_height()
+
+# 창의 크기를 화면 해상도의 비율로 설정 (예: 너비의 50%, 높이의 70%)
+window_width = int(screen_width * 0.26)
+window_height = int(screen_height * 0.65)
+
+print(f"Screen width: {screen_width}, Screen height: {screen_height}, Taskbar height: {taskbar}")
+
+# 창의 위치 계산 (우측 하단)
+position_right = screen_width - window_width - 5
+position_down = screen_height - window_height - taskbar - 5
 
 # 관리자 권한 확인 함수
 def is_admin():
@@ -73,21 +92,6 @@ def main_window():
 
     global window_width, window_height, position_right, position_down, screen_height, screen_width
 
-    # 창의 크기 설정
-    window_width = 400
-    window_height = 500
-
-    # 화면의 너비와 높이 가져오기
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-
-    # 작업 표시줄 높이
-    taskbar_height = get_taskbar_height()
-
-    # 창의 위치 계산 (우측 하단)
-    position_right = screen_width - window_width - 10 #여기 위치는 사용되는 노트북마다 자동으로 변경되도록 할 예정
-    position_down = screen_height - window_height - 80
-
     # 창의 크기와 위치 설정
     root.geometry(f"{window_width}x{window_height}+{position_right}+{position_down}")
     
@@ -114,7 +118,7 @@ def main_window():
     btn_right_click_zone.pack(pady=10)
 
     # 'Backup Manager' 버튼 추가
-    btn_backup_manager = tk.Button(root, text="Open Backup Manager", command=lambda: create_backup_window(set_curtains_values, set_super_curtains_values, set_right_click_values, get_current_curtains_values, get_current_super_curtains_values, get_current_right_click_values))
+    btn_backup_manager = tk.Button(root, text="Open Backup Manager", command=lambda: create_backup_window(set_curtains_values, set_super_curtains_values, set_right_clicks_values, get_current_curtains_values, get_current_super_curtains_values, get_current_right_click_values))
     btn_backup_manager.pack(pady=20)
 
     # 'Quit' 버튼 추가

@@ -146,46 +146,59 @@ def create_curtains_window():
     sub_window = tk.Toplevel()
     sub_window.title("Curtains Settings")
 
+    from main import window_width, window_height, position_right, position_down
+
+    sub_window.geometry(f"{window_width}x{window_height}+{position_right}+{position_down}")
+    sub_window.resizable(False, False)
+    sub_window.overrideredirect(True)
+
+    # 창 크기에 비례한 비율 값 계산
+    padding_x = int(window_width * 0.03)  # 가로 패딩은 창 너비의 5%
+    padding_y = int(window_height * 0.01)  # 세로 패딩은 창 높이의 2%
+    label_font_size = int(window_height * 0.02)  # 글꼴 크기는 창 높이의 3%
+    slider_length = int(window_width * 0.6)  # 슬라이더 길이는 창 너비의 80%
+
     # 이미지 표시할 matplotlib 설정
     global ax, canvas, img
-    fig, ax = plt.subplots(figsize=(6, 4))
-
+    fig, ax = plt.subplots(figsize=(window_width/180, window_height/250))
     img = plt.imread("trackpad/gb4p16_trackpad.jpg")  # 사용자 이미지 파일 로드
-    ax.imshow(img)
-
+    ax.imshow(img, aspect='auto')  # 이미지를 창에 맞게 조정
+    ax.axis('off')  # 이미지 축 제거
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)  # 이미지를 창에 꽉 채우기
+    ax.set_position([0, 0, 1, 1])  # 이미지를 창에 꽉 채우기
     canvas = FigureCanvasTkAgg(fig, master=sub_window)
-    canvas.get_tk_widget().pack()
+    canvas.get_tk_widget().pack(padx=padding_x, pady=padding_y)
 
     global entry_top, entry_left, entry_right
 
     # 슬라이더 설정 및 숫자 입력
-    label_top = tk.Label(sub_window, text="Curtain Top (Height, cm)")
-    label_top.pack(pady=5)
-    slider_top = ttk.Scale(sub_window, from_=0, to=MAX_CURTAIN_TOP_CM, orient='horizontal', command=lambda x: update_entry_from_slider(slider_top, entry_top))
-    slider_top.pack(pady=5)
+    label_top = tk.Label(sub_window, text="Curtain Top (Height, cm)", font=("Arial", label_font_size))
+    label_top.pack(pady=padding_y)
+    slider_top = ttk.Scale(sub_window, from_=0, to=MAX_CURTAIN_TOP_CM, orient='horizontal', command=lambda x: update_entry_from_slider(slider_top, entry_top), length=slider_length)
+    slider_top.pack(pady=padding_y)
     entry_top = tk.Entry(sub_window, justify='center')
     entry_top.insert(0, "0.00")
-    entry_top.pack(pady=5)
+    entry_top.pack(pady=padding_y)
     entry_top.bind("<FocusOut>", lambda event: on_entry_complete(entry_top, slider_top, MAX_CURTAIN_TOP_CM))  # 포커스 벗어날 때 포맷
     entry_top.bind("<Return>", lambda event: on_entry_complete(entry_top, slider_top, MAX_CURTAIN_TOP_CM))  # Enter 키 입력 시 포맷
 
-    label_left = tk.Label(sub_window, text="Curtain Left (Width, cm)")
-    label_left.pack(pady=5)
-    slider_left = ttk.Scale(sub_window, from_=0, to=MAX_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', command=lambda x: update_entry_from_slider(slider_left, entry_left))
-    slider_left.pack(pady=5)
+    label_left = tk.Label(sub_window, text="Curtain Left (Width, cm)", font=("Arial", label_font_size))
+    label_left.pack(pady=padding_y)
+    slider_left = ttk.Scale(sub_window, from_=0, to=MAX_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', command=lambda x: update_entry_from_slider(slider_left, entry_left), length=slider_length)
+    slider_left.pack(pady=padding_y)
     entry_left = tk.Entry(sub_window, justify='center')
     entry_left.insert(0, "0.00")
-    entry_left.pack(pady=5)
+    entry_left.pack(pady=padding_y)
     entry_left.bind("<FocusOut>", lambda event: on_entry_complete(entry_left, slider_left, MAX_CURTAIN_LEFT_RIGHT_CM))
     entry_left.bind("<Return>", lambda event: on_entry_complete(entry_left, slider_left, MAX_CURTAIN_LEFT_RIGHT_CM))
 
-    label_right = tk.Label(sub_window, text="Curtain Right (Width, cm)")
-    label_right.pack(pady=5)
-    slider_right = ttk.Scale(sub_window, from_=0, to=MAX_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', command=lambda x: update_entry_from_slider(slider_right, entry_right))
-    slider_right.pack(pady=5)
+    label_right = tk.Label(sub_window, text="Curtain Right (Width, cm)", font=("Arial", label_font_size))
+    label_right.pack(pady=padding_y)
+    slider_right = ttk.Scale(sub_window, from_=0, to=MAX_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', command=lambda x: update_entry_from_slider(slider_right, entry_right), length=slider_length)
+    slider_right.pack(pady=padding_y)
     entry_right = tk.Entry(sub_window, justify='center')
     entry_right.insert(0, "0.00")
-    entry_right.pack(pady=5)
+    entry_right.pack(pady=padding_y)
     entry_right.bind("<FocusOut>", lambda event: on_entry_complete(entry_right, slider_right, MAX_CURTAIN_LEFT_RIGHT_CM))
     entry_right.bind("<Return>", lambda event: on_entry_complete(entry_right, slider_right, MAX_CURTAIN_LEFT_RIGHT_CM))
 
@@ -195,9 +208,15 @@ def create_curtains_window():
     slider_left.set(curtain_values.get('CurtainLeft', 0) / 1000)  # mm에서 cm로 변환하여 설정
     slider_right.set(curtain_values.get('CurtainRight', 0) / 1000)  # mm에서 cm로 변환하여 설정
 
-    # 저장 버튼
-    btn_save = tk.Button(sub_window, text="Save Settings", command=lambda: save_curtain_values_with_prompt())
-    btn_save.pack(pady=10)
+    # Save와 Back 버튼을 같은 행에 배치
+    frame_buttons = tk.Frame(sub_window)
+    frame_buttons.pack(pady=padding_y)
+
+    btn_save = tk.Button(frame_buttons, text="Save", command=lambda: save_curtain_values_with_prompt())
+    btn_save.grid(row=0, column=0, padx=padding_x)
+
+    btn_back = tk.Button(frame_buttons, text="Back", command=sub_window.destroy)
+    btn_back.grid(row=0, column=1, padx=padding_x)
 
 # 이 함수는 기존 메인 창에 새로운 프레임을 추가하는 함수
 def update_curtains_frame(root):
@@ -246,3 +265,4 @@ def save_curtain_values():
     }
     set_curtains_values(curtain_values)
     print("Curtain values saved:", curtain_values)
+
