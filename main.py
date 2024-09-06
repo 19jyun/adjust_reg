@@ -9,6 +9,21 @@ from trackpad.right_click_zone import get_current_right_click_values, set_right_
 from backup_manager import create_backup_window, initialize_reset_slot
 from win32api import GetMonitorInfo, MonitorFromPoint
 
+# DPI 설정을 가져오는 함수 (배율 정보)
+def get_scaling_factor():
+    try:
+        user32 = ctypes.windll.user32
+        user32.SetProcessDPIAware()  # 프로그램이 DPI를 인식하도록 설정
+        hdc = user32.GetDC(0)
+        dpi = ctypes.windll.gdi32.GetDeviceCaps(hdc, 88)  # LOGPIXELSX
+        scaling_factor = dpi / 96.0  # 96 DPI가 100% 배율에 해당함
+        return scaling_factor
+    except Exception as e:
+        print(f"Error getting DPI scaling: {e}")
+        return 1.0  # 기본 배율 1.0
+
+scale_factor = get_scaling_factor()
+print(f"Scaling factor: {scale_factor}")
 
 def get_taskbar_height():
     user32 = ctypes.windll.user32
@@ -34,6 +49,9 @@ screen_width = 0
 screen_height = 0
 
 taskbar = get_taskbar_height()
+
+screen_height = int(screen_height*scale_factor)
+screen_width = int(screen_width*scale_factor)
 
 # 창의 크기를 화면 해상도의 비율로 설정 (예: 너비의 50%, 높이의 70%)
 window_width = int(screen_width * 0.26)
