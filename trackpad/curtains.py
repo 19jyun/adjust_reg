@@ -142,6 +142,7 @@ def update_entry_from_slider(slider, entry):
 
 # 커튼 설정 GUI 창을 생성하는 함수
 def create_curtains_window():
+    
     sub_window = tk.Toplevel()
     sub_window.title("Curtains Settings")
 
@@ -197,6 +198,25 @@ def create_curtains_window():
     # 저장 버튼
     btn_save = tk.Button(sub_window, text="Save Settings", command=lambda: save_curtain_values_with_prompt())
     btn_save.pack(pady=10)
+
+# 이 함수는 기존 메인 창에 새로운 프레임을 추가하는 함수
+def update_curtains_frame(root):
+    frame = tk.Frame(root)
+
+    label_top = tk.Label(frame, text="Curtain Top (Height, cm)")
+    label_top.pack(pady=5)
+
+    slider_top = ttk.Scale(frame, from_=0, to=7.5, orient='horizontal')
+    slider_top.pack(pady=5)
+
+    entry_top = tk.Entry(frame, justify='center')
+    entry_top.insert(0, "0.00")
+    entry_top.pack(pady=5)
+
+    btn_save = tk.Button(frame, text="Save Settings", command=lambda: save_curtain_values(entry_top.get()))
+    btn_save.pack(pady=10)
+
+    return frame
 
 # 저장 시, 유저에게 백업을 할지 묻는 함수
 def save_curtain_values_with_prompt():

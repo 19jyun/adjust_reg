@@ -7,8 +7,24 @@ from trackpad.curtains import get_current_curtains_values, set_curtains_values, 
 from trackpad.super_curtains import get_current_super_curtains_values, set_super_curtains_values, create_super_curtains_window
 from trackpad.right_click_zone import get_current_right_click_values, set_right_click_values, create_right_click_window
 from backup_manager import create_backup_window, initialize_reset_slot
+from win32api import GetMonitorInfo, MonitorFromPoint
+
+window_width, window_height, position_right, position_down, screen_width, screen_height = 0, 0, 0, 0, 0, 0
 
 root = None  # 전역 변수를 제대로 처리하기 위해 root를 미리 선언
+
+def get_taskbar_height():
+    user32 = ctypes.windll.user32
+    # 전체 화면 해상도
+    screen_width = user32.GetSystemMetrics(0)
+    screen_height = user32.GetSystemMetrics(1)
+
+    # 작업 표시줄을 제외한 해상도
+    monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
+    work_area = monitor_info['Work']
+
+    taskbar_height = screen_height - work_area[3]
+    return taskbar_height
 
 # 관리자 권한 확인 함수
 def is_admin():
@@ -36,6 +52,11 @@ def mark_first_run():
     with open("first_run_flag.txt", "w") as f:
         f.write("This file indicates that the program has been run before.")
 
+# 창 드래그 비활성화 함수
+def disable_window_drag(event):
+    # 빈 함수로 이벤트를 처리하지 않음
+    return "break"
+
 # 창 닫기 이벤트 처리 함수
 def on_closing():
     global root
@@ -50,8 +71,35 @@ def main_window():
     root = tk.Tk()
     root.title("Trackpad Registry Manager")
 
+    global window_width, window_height, position_right, position_down, screen_height, screen_width
+
+    # 창의 크기 설정
+    window_width = 400
+    window_height = 500
+
+    # 화면의 너비와 높이 가져오기
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    # 작업 표시줄 높이
+    taskbar_height = get_taskbar_height()
+
+    # 창의 위치 계산 (우측 하단)
+    position_right = screen_width - window_width - 10 #여기 위치는 사용되는 노트북마다 자동으로 변경되도록 할 예정
+    position_down = screen_height - window_height - 80
+
+    # 창의 크기와 위치 설정
+    root.geometry(f"{window_width}x{window_height}+{position_right}+{position_down}")
+    
+    # 창의 크기 조절 비활성화
+    root.resizable(False, False)
+
     # 창 닫기 이벤트 연결
     root.protocol("WM_DELETE_WINDOW", on_closing)
+    root.overrideredirect(True)
+
+    # 창 이동 비활성화 (제목바 드래그 무시)
+    root.bind("<Configure>", disable_window_drag)
 
     # 'Set Curtains' 버튼
     btn_curtains = tk.Button(root, text="Set Curtains", command=create_curtains_window)
@@ -68,6 +116,10 @@ def main_window():
     # 'Backup Manager' 버튼 추가
     btn_backup_manager = tk.Button(root, text="Open Backup Manager", command=lambda: create_backup_window(set_curtains_values, set_super_curtains_values, set_right_click_values, get_current_curtains_values, get_current_super_curtains_values, get_current_right_click_values))
     btn_backup_manager.pack(pady=20)
+
+    # 'Quit' 버튼 추가
+    btn_quit = tk.Button(root, text="Quit", command=on_closing)
+    btn_quit.pack(pady=10)
 
     # 프로그램이 처음 실행될 때만 초기 레지스트리 값을 백업 (Slot 0)
     if is_first_run():
