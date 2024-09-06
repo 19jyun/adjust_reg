@@ -6,6 +6,11 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 import sys
 from backup_manager import create_backup_window
+from ui_style import UIStyle
+
+# UI 스타일 설정
+scale_factor = UIStyle.get_scaling_factor()
+ui_style = UIStyle(scale_factor)
 
 # 레지스트리 경로 및 키
 registry_path = r'SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad'
@@ -116,7 +121,6 @@ def update_entry_from_slider(slider, entry):
 def on_entry_complete(entry, slider, max_value):
     update_slider_from_entry(entry, slider, max_value)
     format_entry(entry)  # 0.00 형식으로 포맷
-    update_image()  # 이미지 즉시 업데이트
 
 # 입력 필드의 값을 0.00 형식으로 포맷하는 함수
 def format_entry(entry):
@@ -133,50 +137,51 @@ def create_right_click_window():
     sub_window = tk.Toplevel()
     sub_window.title("Right-Click Zone Settings")
 
-    from main import window_width, window_height, position_right, position_down
+    # 스크롤 가능한 프레임 생성
+    scrollable_frame = ui_style.create_scrollable_frame(sub_window)
 
-    sub_window.geometry(f"{window_width}x{window_height}+{position_right}+{position_down}")
+    sub_window.geometry(ui_style.get_window_geometry())
     sub_window.resizable(False, False)
     sub_window.overrideredirect(True)
 
-    # 창 크기에 비례한 비율 값 계산
-    padding_x = int(window_width * 0.03)
-    padding_y = int(window_height * 0.01)
-    label_font_size = int(window_height * 0.02)
-    slider_length = int(window_width * 0.6)
+    padding_x, padding_y = ui_style.get_padding()
 
     # 이미지 표시할 matplotlib 설정
     global ax, canvas, img
-    fig, ax = plt.subplots(figsize=(window_width/180, window_height/250))
+    fig, ax = plt.subplots(figsize=((ui_style.window_width / ui_style.scale_factor) / 180, (ui_style.window_height / ui_style.scale_factor) / 250))
     img = plt.imread("trackpad/gb4p16_trackpad.jpg")  # 사용자 이미지 파일 로드
     ax.imshow(img, aspect='auto')
     ax.axis('off')  # 이미지 축 제거
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)
     ax.set_position([0, 0, 1, 1])  # 이미지를 창에 꽉 채우기
-    canvas = FigureCanvasTkAgg(fig, master=sub_window)
+    canvas = FigureCanvasTkAgg(fig, master=scrollable_frame)
     canvas.get_tk_widget().pack(padx=padding_x, pady=padding_y)
 
     global entry_width, entry_height
 
     # Width 슬라이더 및 입력 필드
-    label_width = tk.Label(sub_window, text="Right-Click Zone Width (cm)", font=("Arial", label_font_size))
+    label_width = tk.Label(scrollable_frame, text="Right-Click Zone Width (cm)")
+    ui_style.apply_label_style(label_width)
     label_width.pack(pady=padding_y)
-    slider_width = ttk.Scale(sub_window, from_=0, to=MAX_WIDTH_CM, orient='horizontal', length=slider_length, 
+    slider_width = ttk.Scale(scrollable_frame, from_=0, to=MAX_WIDTH_CM, orient='horizontal', length=ui_style.slider_length, 
                              command=lambda x: update_entry_from_slider(slider_width, entry_width))  # 슬라이더 값 변경 시 즉시 반영
     slider_width.pack(pady=padding_y)
-    entry_width = tk.Entry(sub_window, justify='center')
+    entry_width = tk.Entry(scrollable_frame, justify='center')
+    ui_style.apply_entry_style(entry_width)
     entry_width.insert(0, "0.00")
     entry_width.pack(pady=padding_y)
     entry_width.bind("<FocusOut>", lambda event: on_entry_complete(entry_width, slider_width, MAX_WIDTH_CM))
     entry_width.bind("<Return>", lambda event: on_entry_complete(entry_width, slider_width, MAX_WIDTH_CM))
 
     # Height 슬라이더 및 입력 필드
-    label_height = tk.Label(sub_window, text="Right-Click Zone Height (cm)", font=("Arial", label_font_size))
+    label_height = tk.Label(scrollable_frame, text="Right-Click Zone Height (cm)")
+    ui_style.apply_label_style(label_height)
     label_height.pack(pady=padding_y)
-    slider_height = ttk.Scale(sub_window, from_=0, to=MAX_HEIGHT_CM, orient='horizontal', length=slider_length,
+    slider_height = ttk.Scale(scrollable_frame, from_=0, to=MAX_HEIGHT_CM, orient='horizontal', length=ui_style.slider_length,
                               command=lambda x: update_entry_from_slider(slider_height, entry_height))  # 슬라이더 값 변경 시 즉시 반영
     slider_height.pack(pady=padding_y)
-    entry_height = tk.Entry(sub_window, justify='center')
+    entry_height = tk.Entry(scrollable_frame, justify='center', width=int(10 / scale_factor))
+    ui_style.apply_entry_style(entry_height)
     entry_height.insert(0, "0.00")
     entry_height.pack(pady=padding_y)
     entry_height.bind("<FocusOut>", lambda event: on_entry_complete(entry_height, slider_height, MAX_HEIGHT_CM))
@@ -188,13 +193,15 @@ def create_right_click_window():
     slider_height.set(right_click_values.get('RightClickZoneHeight', 0) / 1000)  # mm에서 cm로 변환하여 설정
 
     # Save와 Back 버튼을 같은 행에 배치
-    frame_buttons = tk.Frame(sub_window)
+    frame_buttons = tk.Frame(scrollable_frame)
     frame_buttons.pack(pady=padding_y)
 
     btn_save = tk.Button(frame_buttons, text="Save", command=lambda: save_right_click_values_with_prompt())
+    ui_style.apply_button_style(btn_save)
     btn_save.grid(row=0, column=0, padx=padding_x)
 
     btn_back = tk.Button(frame_buttons, text="Back", command=sub_window.destroy)
+    ui_style.apply_button_style(btn_back)
     btn_back.grid(row=0, column=1, padx=padding_x)
 
 # 저장 시, 유저에게 백업을 할지 묻는 함수
