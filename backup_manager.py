@@ -96,9 +96,6 @@ def create_backup_window(set_curtains_values, set_super_curtains_values, set_rig
     backup_window = tk.Toplevel()
     backup_window.title("Registry Backup Manager")
 
-    # 스크롤 가능한 프레임 생성
-    scrollable_frame = ui_style.create_scrollable_frame(backup_window)
-
     # UI 스타일로 창 크기 설정
     backup_window.geometry(ui_style.get_window_geometry())
     backup_window.resizable(False, False)
@@ -111,12 +108,12 @@ def create_backup_window(set_curtains_values, set_super_curtains_values, set_rig
     padding_x, padding_y = ui_style.get_padding()
 
     # Slot 0을 "default"로 표시하며 모든 값을 0으로 초기화
-    default_button = tk.Button(scrollable_frame, text="Default", 
+    default_button = tk.Button(backup_window, text="Default", 
                                command=lambda: restore_registry(0, set_curtains_values, set_super_curtains_values, set_right_click_values))
     ui_style.apply_button_style(default_button)
     default_button.grid(row=0, column=0, padx=padding_x, pady=padding_y)
 
-    default_restore_button = tk.Button(scrollable_frame, text="Restore", 
+    default_restore_button = tk.Button(backup_window, text="Restore", 
                                        command=lambda: restore_registry(0, set_curtains_values, set_super_curtains_values, set_right_click_values))
     ui_style.apply_button_style(default_restore_button)
     default_restore_button.grid(row=0, column=1, padx=padding_x, pady=padding_y)
@@ -125,7 +122,7 @@ def create_backup_window(set_curtains_values, set_super_curtains_values, set_rig
 
     # Slot 1~9 버튼 추가 (Backup, Restore, Detail)
     for i in range(1, 10):
-        slot_button = tk.Button(scrollable_frame, text=f"Slot {i + 1}", 
+        slot_button = tk.Button(backup_window, text=f"Slot {i + 1}", 
                                 command=lambda slot=i: backup_registry(slot, 
                                                                       get_current_curtains_values(), 
                                                                       get_current_super_curtains_values(), 
@@ -133,19 +130,19 @@ def create_backup_window(set_curtains_values, set_super_curtains_values, set_rig
         ui_style.apply_button_style(slot_button)
         slot_button.grid(row=i, column=0, padx=10, pady=5)
 
-        restore_button = tk.Button(scrollable_frame, text="Restore", 
+        restore_button = tk.Button(backup_window, text="Restore", 
                                    command=lambda slot=i: restore_registry(slot, set_curtains_values, set_super_curtains_values, set_right_click_values))
         ui_style.apply_button_style(restore_button)
         restore_button.grid(row=i, column=1, padx=padding_x, pady=padding_y)
 
-        detail_button = tk.Button(scrollable_frame, text="Detail", 
+        detail_button = tk.Button(backup_window, text="Detail", 
                                   command=lambda slot=i: show_details(slot))
         ui_style.apply_button_style(detail_button)
         detail_button.grid(row=i, column=2, padx=padding_x, pady=padding_y)
 
         restore_buttons.append(restore_button)  # Restore 버튼을 리스트에 추가
 
-    btn_back = tk.Button(scrollable_frame, text="Back", command=backup_window.destroy)
+    btn_back = tk.Button(backup_window, text="Back", command=backup_window.destroy)
     ui_style.apply_button_style(btn_back)
     btn_back.grid(row=11, column=1, padx=padding_x, pady=padding_y, columnspan=2)  # Back 버튼을 마지막에 추가    
 

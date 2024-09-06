@@ -137,9 +137,6 @@ def create_right_click_window():
     sub_window = tk.Toplevel()
     sub_window.title("Right-Click Zone Settings")
 
-    # 스크롤 가능한 프레임 생성
-    scrollable_frame = ui_style.create_scrollable_frame(sub_window)
-
     sub_window.geometry(ui_style.get_window_geometry())
     sub_window.resizable(False, False)
     sub_window.overrideredirect(True)
@@ -154,19 +151,19 @@ def create_right_click_window():
     ax.axis('off')  # 이미지 축 제거
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)
     ax.set_position([0, 0, 1, 1])  # 이미지를 창에 꽉 채우기
-    canvas = FigureCanvasTkAgg(fig, master=scrollable_frame)
+    canvas = FigureCanvasTkAgg(fig, master=sub_window)
     canvas.get_tk_widget().pack(padx=padding_x, pady=padding_y)
 
     global entry_width, entry_height
 
     # Width 슬라이더 및 입력 필드
-    label_width = tk.Label(scrollable_frame, text="Right-Click Zone Width (cm)")
+    label_width = tk.Label(sub_window, text="Right-Click Zone Width (cm)")
     ui_style.apply_label_style(label_width)
     label_width.pack(pady=padding_y)
-    slider_width = ttk.Scale(scrollable_frame, from_=0, to=MAX_WIDTH_CM, orient='horizontal', length=ui_style.slider_length, 
+    slider_width = ttk.Scale(sub_window, from_=0, to=MAX_WIDTH_CM, orient='horizontal', length=ui_style.slider_length, 
                              command=lambda x: update_entry_from_slider(slider_width, entry_width))  # 슬라이더 값 변경 시 즉시 반영
     slider_width.pack(pady=padding_y)
-    entry_width = tk.Entry(scrollable_frame, justify='center')
+    entry_width = tk.Entry(sub_window, justify='center')
     ui_style.apply_entry_style(entry_width)
     entry_width.insert(0, "0.00")
     entry_width.pack(pady=padding_y)
@@ -174,13 +171,13 @@ def create_right_click_window():
     entry_width.bind("<Return>", lambda event: on_entry_complete(entry_width, slider_width, MAX_WIDTH_CM))
 
     # Height 슬라이더 및 입력 필드
-    label_height = tk.Label(scrollable_frame, text="Right-Click Zone Height (cm)")
+    label_height = tk.Label(sub_window, text="Right-Click Zone Height (cm)")
     ui_style.apply_label_style(label_height)
     label_height.pack(pady=padding_y)
-    slider_height = ttk.Scale(scrollable_frame, from_=0, to=MAX_HEIGHT_CM, orient='horizontal', length=ui_style.slider_length,
+    slider_height = ttk.Scale(sub_window, from_=0, to=MAX_HEIGHT_CM, orient='horizontal', length=ui_style.slider_length,
                               command=lambda x: update_entry_from_slider(slider_height, entry_height))  # 슬라이더 값 변경 시 즉시 반영
     slider_height.pack(pady=padding_y)
-    entry_height = tk.Entry(scrollable_frame, justify='center', width=int(10 / scale_factor))
+    entry_height = tk.Entry(sub_window, justify='center', width=int(10 / scale_factor))
     ui_style.apply_entry_style(entry_height)
     entry_height.insert(0, "0.00")
     entry_height.pack(pady=padding_y)
@@ -193,7 +190,7 @@ def create_right_click_window():
     slider_height.set(right_click_values.get('RightClickZoneHeight', 0) / 1000)  # mm에서 cm로 변환하여 설정
 
     # Save와 Back 버튼을 같은 행에 배치
-    frame_buttons = tk.Frame(scrollable_frame)
+    frame_buttons = tk.Frame(sub_window)
     frame_buttons.pack(pady=padding_y)
 
     btn_save = tk.Button(frame_buttons, text="Save", command=lambda: save_right_click_values_with_prompt())

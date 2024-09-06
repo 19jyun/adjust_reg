@@ -67,13 +67,14 @@ def prompt_for_save():
 
 # 레지스트리 값을 백업하는 함수 (main.py에서 백업 시스템 사용)
 def save_registry_before_edit():
+    # main.py에서 백업 시스템을 불러오는 코드
     print("Registry backup started.")
 
 # 이미지를 업데이트하는 함수 (SuperCurtains용)
 def update_super_curtain_image():
     ax.clear()
 
-    # 원본 이미지를 그립니다
+    # 원본 이미지를 그려줍니다
     ax.imshow(img)
 
     # 커튼 구역을 설정 (트랙패드 영역에서만)
@@ -153,9 +154,6 @@ def create_super_curtains_window():
     sub_window = tk.Toplevel()
     sub_window.title("Super Curtains Settings")
 
-    # 스크롤 가능한 프레임 생성
-    scrollable_frame = ui_style.create_scrollable_frame(sub_window)
-
     # UI 스타일로 창 크기 설정
     sub_window.geometry(ui_style.get_window_geometry())
     sub_window.resizable(False, False)
@@ -172,58 +170,58 @@ def create_super_curtains_window():
     ax.axis('off')  # 이미지 축 제거
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)  # 이미지를 창에 꽉 채우기
     ax.set_position([0, 0, 1, 1])  # 이미지를 창에 꽉 채우기
-    canvas = FigureCanvasTkAgg(fig, master=scrollable_frame)
+    canvas = FigureCanvasTkAgg(fig, master=sub_window)
     canvas.get_tk_widget().pack(padx=padding_x, pady=padding_y)
 
     global entry_top, entry_bottom, entry_left, entry_right
 
     # 슬라이더 및 입력 필드
-    label_top = tk.Label(scrollable_frame, text="Super Curtain Top (Height, cm)")
+    label_top = tk.Label(sub_window, text="Super Curtain Top (Height, cm)")
     ui_style.apply_label_style(label_top)
     label_top.pack(pady=padding_y)
-    slider_top = ttk.Scale(scrollable_frame, from_=0, to=MAX_SUPER_CURTAIN_TOP_BOTTOM_CM, orient='horizontal', length=ui_style.slider_length, 
+    slider_top = ttk.Scale(sub_window, from_=0, to=MAX_SUPER_CURTAIN_TOP_BOTTOM_CM, orient='horizontal', length=ui_style.slider_length, 
                            command=lambda x: update_entry_from_slider(slider_top, entry_top))
     slider_top.pack(pady=padding_y)
-    entry_top = tk.Entry(scrollable_frame, justify='center')
+    entry_top = tk.Entry(sub_window, justify='center')
     ui_style.apply_entry_style(entry_top)
     entry_top.insert(0, "0.00")
     entry_top.pack(pady=padding_y)
     entry_top.bind("<FocusOut>", lambda event: on_entry_complete(entry_top, slider_top, MAX_SUPER_CURTAIN_TOP_BOTTOM_CM))
     entry_top.bind("<Return>", lambda event: on_entry_complete(entry_top, slider_top, MAX_SUPER_CURTAIN_TOP_BOTTOM_CM))
 
-    label_bottom = tk.Label(scrollable_frame, text="Super Curtain Bottom (Height, cm)")
+    label_bottom = tk.Label(sub_window, text="Super Curtain Bottom (Height, cm)")
     ui_style.apply_label_style(label_bottom)
     label_bottom.pack(pady=padding_y)
-    slider_bottom = ttk.Scale(scrollable_frame, from_=0, to=MAX_SUPER_CURTAIN_TOP_BOTTOM_CM, orient='horizontal', length=ui_style.slider_length, 
+    slider_bottom = ttk.Scale(sub_window, from_=0, to=MAX_SUPER_CURTAIN_TOP_BOTTOM_CM, orient='horizontal', length=ui_style.slider_length, 
                               command=lambda x: update_entry_from_slider(slider_bottom, entry_bottom))
     slider_bottom.pack(pady=padding_y)
-    entry_bottom = tk.Entry(scrollable_frame, justify='center')
+    entry_bottom = tk.Entry(sub_window, justify='center')
     ui_style.apply_entry_style(entry_bottom)
     entry_bottom.insert(0, "0.00")
     entry_bottom.pack(pady=padding_y)
     entry_bottom.bind("<FocusOut>", lambda event: on_entry_complete(entry_bottom, slider_bottom, MAX_SUPER_CURTAIN_TOP_BOTTOM_CM))
     entry_bottom.bind("<Return>", lambda event: on_entry_complete(entry_bottom, slider_bottom, MAX_SUPER_CURTAIN_TOP_BOTTOM_CM))
 
-    label_left = tk.Label(scrollable_frame, text="Super Curtain Left (Width, cm)")
+    label_left = tk.Label(sub_window, text="Super Curtain Left (Width, cm)")
     ui_style.apply_label_style(label_left)
     label_left.pack(pady=padding_y)
-    slider_left = ttk.Scale(scrollable_frame, from_=0, to=MAX_SUPER_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', length=ui_style.slider_length, 
+    slider_left = ttk.Scale(sub_window, from_=0, to=MAX_SUPER_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', length=ui_style.slider_length, 
                             command=lambda x: update_entry_from_slider(slider_left, entry_left))
     slider_left.pack(pady=padding_y)
-    entry_left = tk.Entry(scrollable_frame, justify='center')
+    entry_left = tk.Entry(sub_window, justify='center')
     ui_style.apply_entry_style(entry_left)
     entry_left.insert(0, "0.00")
     entry_left.pack(pady=padding_y)
     entry_left.bind("<FocusOut>", lambda event: on_entry_complete(entry_left, slider_left, MAX_SUPER_CURTAIN_LEFT_RIGHT_CM))
     entry_left.bind("<Return>", lambda event: on_entry_complete(entry_left, slider_left, MAX_SUPER_CURTAIN_LEFT_RIGHT_CM))
 
-    label_right = tk.Label(scrollable_frame, text="Super Curtain Right (Width, cm)")
+    label_right = tk.Label(sub_window, text="Super Curtain Right (Width, cm)")
     ui_style.apply_label_style(label_right)
     label_right.pack(pady=padding_y)
-    slider_right = ttk.Scale(scrollable_frame, from_=0, to=MAX_SUPER_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', length=ui_style.slider_length, 
+    slider_right = ttk.Scale(sub_window, from_=0, to=MAX_SUPER_CURTAIN_LEFT_RIGHT_CM, orient='horizontal', length=ui_style.slider_length, 
                              command=lambda x: update_entry_from_slider(slider_right, entry_right))
     slider_right.pack(pady=padding_y)
-    entry_right = tk.Entry(scrollable_frame, justify='center')
+    entry_right = tk.Entry(sub_window, justify='center')
     ui_style.apply_entry_style(entry_right)
     entry_right.insert(0, "0.00")
     entry_right.pack(pady=padding_y)
@@ -238,7 +236,7 @@ def create_super_curtains_window():
     slider_right.set(super_curtain_values.get('SuperCurtainRight', 0) / 1000)  # mm에서 cm로 변환하여 설정
 
     # Save와 Back 버튼을 같은 행에 배치
-    frame_buttons = tk.Frame(scrollable_frame)
+    frame_buttons = tk.Frame(sub_window)
     frame_buttons.pack(pady=padding_y)
 
     btn_save = tk.Button(frame_buttons, text="Save", command=lambda: save_super_curtain_values_with_prompt())
@@ -257,11 +255,14 @@ def save_super_curtain_values_with_prompt():
     from trackpad.right_click_zone import get_current_right_click_values, set_right_click_values, create_right_click_window
 
     if response is None:
+        # "Cancel editing"
         print("Editing canceled.")
     elif response:
+        # "Edit after saving"
         create_backup_window(set_super_curtains_values, set_curtains_values, set_right_click_values, get_current_super_curtains_values, get_current_curtains_values, get_current_right_click_values)
         save_super_curtain_values()
     else:
+        # "Edit without saving"
         save_super_curtain_values()
 
 # 슈퍼 커튼 레지스트리 값을 저장하는 함수
