@@ -7,6 +7,7 @@ import os
 import sys
 from backup_manager import create_backup_window
 from new_ui_style import NewUIStyle
+from reboot_prompt import prompt_reboot
 
 # UI 스타일 적용
 scale_factor = NewUIStyle.get_scaling_factor()
@@ -218,3 +219,4 @@ def save_right_click_values():
     }
     set_right_clicks_values(right_click_values)
     print("Right-click zone values saved:", right_click_values)
+    prompt_reboot()  # 재부팅 메시지 표시

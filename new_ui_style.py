@@ -35,6 +35,7 @@ class NewUIStyle:
         self.button_width_size = int(10)
         self.button_font_size = int(12)
         self.label_font_size = int(14)
+        self.checkbox_font_size = int(12)
         self.padding_x = int(10)
         self.padding_y = int(10)
         self.slider_length = int(200)
@@ -93,6 +94,10 @@ class NewUIStyle:
 
     def apply_slider_style(self, slider):
         slider.config(length=self.slider_length)
+
+    # 새로 추가된 함수: 체크박스 스타일 적용
+    def apply_checkbox_style(self, checkbox):
+        checkbox.config(font=("Arial", self.checkbox_font_size))
 
     def get_padding(self):
         return self.padding_x, self.padding_y

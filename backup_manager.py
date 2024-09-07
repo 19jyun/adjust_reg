@@ -3,6 +3,7 @@ from tkinter import messagebox
 import os
 import json
 from new_ui_style import NewUIStyle
+from reboot_prompt import prompt_reboot
 
 # UI 스타일 적용
 scale_factor = NewUIStyle.get_scaling_factor()
@@ -82,6 +83,8 @@ def restore_registry(slot, set_curtains_values, set_super_curtains_values, set_r
     set_right_click_values(backup_data['Right-click Zone'])
 
     messagebox.showinfo("Restore", f"Registry values restored from slot {slot + 1}.")
+
+    prompt_reboot()  # 재부팅 메시지 표시
 
 # 백업 관리 창에서 버튼 상태를 업데이트하는 함수
 def update_buttons():

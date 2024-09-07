@@ -1,11 +1,13 @@
 import tkinter as tk
 from tkinter import messagebox
 import os
+import json
 import sys
 import ctypes
 from trackpad.curtains import get_current_curtains_values, set_curtains_values, create_curtains_window
 from trackpad.super_curtains import get_current_super_curtains_values, set_super_curtains_values, create_super_curtains_window
 from trackpad.right_click_zone import get_current_right_click_values, set_right_clicks_values, create_right_click_window
+from settings import create_settings_window
 from backup_manager import create_backup_window, initialize_reset_slot
 from ui_style import UIStyle
 
@@ -21,6 +23,15 @@ def is_admin():
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
         return False
+
+def load_settings():
+    settings_file = 'settings.json'
+    if os.path.exists(settings_file):
+        with open(settings_file, 'r') as file:
+            settings = json.load(file)
+            return settings
+    else:
+        return {}
 
 # 관리자 권한을 요청하는 함수
 def request_admin():
@@ -83,6 +94,11 @@ def main_window():
     ui_style.apply_button_style(btn_backup_manager)
     btn_backup_manager.pack(pady=padding_y)
 
+    # 'Settings' 버튼 추가
+    btn_settings = tk.Button(root, text="Open Settings", command=create_settings_window)
+    ui_style.apply_button_style(btn_settings)
+    btn_settings.pack(pady=padding_y)
+
     # 'Quit' 버튼 추가
     btn_quit = tk.Button(root, text="Quit", command=on_closing)
     ui_style.apply_button_style(btn_quit)
@@ -91,5 +107,11 @@ def main_window():
     root.mainloop()
 
 if __name__ == "__main__":
-    request_admin()
+    
+    if is_admin():
+        print("Admin rights granted.")
+    else:
+        print("Admin rights required.")
+        request_admin()
+    
     main_window()

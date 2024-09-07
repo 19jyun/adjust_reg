@@ -7,6 +7,8 @@ import os
 import sys
 from backup_manager import create_backup_window
 from new_ui_style import NewUIStyle
+from reboot_prompt import prompt_reboot
+
 
 # UI 스타일 적용
 scale_factor = NewUIStyle.get_scaling_factor()
@@ -242,3 +244,5 @@ def save_curtain_values():
     }
     set_curtains_values(curtain_values)
     print("Curtain values saved:", curtain_values)
+    
+    prompt_reboot()
