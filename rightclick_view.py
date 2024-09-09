@@ -49,7 +49,7 @@ class RightClickView(tk.Frame):
         self.ui_style.apply_button_style(btn_save)
         btn_save.grid(row=0, column=0, padx=padding_x)
 
-        btn_back = tk.Button(frame_buttons, text="Back", command=lambda: self.controller.show_frame("MainMenu"))
+        btn_back = tk.Button(frame_buttons, text="Back", command=lambda: self.back_to_main_menu())
         self.ui_style.apply_button_style(btn_back)
         btn_back.grid(row=0, column=1, padx=padding_x)
 
@@ -122,8 +122,8 @@ class RightClickView(tk.Frame):
         self.ax.clear()
         self.ax.imshow(self.img)
 
-        right_click_width = float(self.entry_width.get())
-        right_click_height = float(self.entry_height.get())
+        right_click_width = float(self.entry_width.get() or 0)
+        right_click_height = float(self.entry_height.get() or 0)
 
         right_click_width_px = right_click_width * self.cm_to_px_width
         right_click_height_px = right_click_height * self.cm_to_px_height
@@ -185,3 +185,25 @@ class RightClickView(tk.Frame):
         self.set_right_click_values(right_click_values)
         print("Right-click zone values saved:", right_click_values)
         prompt_reboot()
+        
+    def reset_visual_elements(self):
+        """레지스트리 값에 따라 비주얼 요소들을 원래대로 초기화"""
+        # 저장된 레지스트리 값을 다시 로드
+        curtain_values = self.get_current_right_click_values()
+
+        # 슬라이더와 입력 필드를 저장된 레지스트리 값으로 설정
+        self.slider_width.set(curtain_values.get('RightClickZoneWidth', 0) / 1000)
+        self.entry_width.delete(0, tk.END)
+        self.entry_width.insert(0, str(curtain_values.get('RightClickZoneWidth', 0) / 1000))
+
+        self.slider_height.set(curtain_values.get('RightClickZoneHeight', 0) / 1000)
+        self.entry_height.delete(0, tk.END)
+        self.entry_height.insert(0, str(curtain_values.get('RightClickZoneHeight', 0) / 1000))
+
+        # 이미지 업데이트 (초록/노란색 영역도 함께 업데이트)
+        self.update_image()
+        
+
+    def back_to_main_menu(self):
+        self.controller.show_frame("MainMenu")
+        self.reset_visual_elements() # 저장을 하지 않았으니, visual elements들을 원래대로 되돌린다

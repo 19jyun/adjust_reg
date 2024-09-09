@@ -32,7 +32,7 @@ class SettingsView(tk.Frame):
         # "Minimize to system tray" 체크박스 추가
         self.var_minimize_to_tray = tk.BooleanVar()
         self.var_minimize_to_tray.set(self.load_settings().get('minimize_to_tray', False))  # 초기값 로드
-        checkbox_minimize_to_tray = tk.Checkbutton(self, text="Create a shortcut in system tray", variable=self.var_minimize_to_tray, command=self.save_minimize_to_tray)
+        checkbox_minimize_to_tray = tk.Checkbutton(self, text="Minimize to system tray instead of completely quitting", variable=self.var_minimize_to_tray, command=self.save_minimize_to_tray)
         self.ui_style.apply_checkbox_style(checkbox_minimize_to_tray)
         checkbox_minimize_to_tray.pack(pady=padding_y)
 
@@ -66,8 +66,22 @@ class SettingsView(tk.Frame):
 
     def reset_backup_file(self):
         if messagebox.askyesno("Confirm Reset", "Are you sure you want to reset the backup file to default?"):
+            backup_file = BACKUP_FILE_PATH
+            original_file = 'original_registry.json'
             
-            backups = [{} for _ in range(11)]
-            save_backups(backups)  # backup_manager.py에서 제공하는 save_backups 함수 사용
+            if os.path.exists(original_file):
+                try:
+                    with open(original_file, "r") as orig_file:
+                        data = json.load(orig_file)
+                    with open(backup_file, "w") as backup_file:
+                        json.dump(data, backup_file)
+                    print(f"Copied data from {original_file} to {backup_file}")
+                except Exception as e:
+                    print(f"Error copying data from {original_file} to {backup_file}: {e}")
+            else:
+                # Create an empty backups.json if original_registry.json does not exist
+                with open(backup_file, "w") as f:
+                    json.dump({}, f)
+                print(f"{original_file} does not exist. Created empty {backup_file}")
     
             messagebox.showinfo("Reset Complete", "Backup file has been reset to default.")

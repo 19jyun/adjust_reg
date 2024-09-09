@@ -104,17 +104,23 @@ class BackupView(tk.Frame):
             save_backups(self.backups)
 
     def backup_registry(self, slot):
+        print(f"Backing up registry for slot {slot}")
+        
         curtains_values = self.get_current_curtains_values()
         super_curtains_values = self.get_current_super_curtains_values()
         right_click_values = self.get_current_right_click_values()
 
+        print("Curtains values:", curtains_values)
+        print("Super Curtains values:", super_curtains_values)
+        print("Right-click values:", right_click_values)
+
         # 레지스트리 값을 백업에 저장 (CurtainBottom, SuperCurtainBottom을 제외)
         self.backups[slot] = {
-            'Curtains': {key: curtains_values.get(key, 0) for key in ['CurtainTop', 'CurtainLeft', 'CurtainRight']},
-            'Super Curtains': {key: super_curtains_values.get(key, 0) for key in ['SuperCurtainTop', 'SuperCurtainLeft', 'SuperCurtainRight']},
-            'Right-click Zone': {key: right_click_values.get(key, 0) for key in ['RightClickZoneWidth', 'RightClickZoneHeight']},
+            'Curtains': {key: curtains_values[key] for key in ['CurtainTop', 'CurtainLeft', 'CurtainRight'] if key in curtains_values},
+            'Super Curtains': {key: super_curtains_values[key] for key in ['SuperCurtainTop', 'SuperCurtainLeft', 'SuperCurtainRight'] if key in super_curtains_values},
+            'Right-click Zone': {key: right_click_values[key] for key in ['RightClickZoneWidth', 'RightClickZoneHeight'] if key in right_click_values},
         }
-        
+
         save_backups(self.backups)
         messagebox.showinfo("Backup", f"Registry values backed up in slot {slot + 1}.")
         self.update_buttons()
@@ -161,3 +167,8 @@ class BackupView(tk.Frame):
         }
         save_backups()
         self.update_buttons()
+        
+    def show(self):
+        """BackupView가 표시될 때 호출"""
+        self.load_backups()  # 최신 백업 파일을 불러옴
+        self.update_buttons()  # 버튼 상태를 업데이트

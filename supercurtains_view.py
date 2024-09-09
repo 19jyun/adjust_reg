@@ -49,7 +49,7 @@ class SuperCurtainsView(tk.Frame):
         self.ui_style.apply_button_style(btn_save)
         btn_save.grid(row=0, column=0, padx=padding_x)
 
-        btn_back = tk.Button(frame_buttons, text="Back", command=lambda: self.controller.show_frame("MainMenu"))
+        btn_back = tk.Button(frame_buttons, text="Back", command=lambda: self.back_to_main_menu())
         self.ui_style.apply_button_style(btn_back)
         btn_back.grid(row=0, column=1, padx=padding_x)
 
@@ -124,9 +124,9 @@ class SuperCurtainsView(tk.Frame):
         self.ax.clear()
         self.ax.imshow(self.img)
 
-        curtain_top = float(self.entry_top.get())
-        curtain_left = float(self.entry_left.get())
-        curtain_right = float(self.entry_right.get())
+        curtain_top = float(self.entry_top.get() or 0)
+        curtain_left = float(self.entry_left.get() or 0)
+        curtain_right = float(self.entry_right.get() or 0)
 
         curtain_top_px = curtain_top * self.cm_to_px_height
         curtain_left_px = curtain_left * self.cm_to_px_width
@@ -194,3 +194,28 @@ class SuperCurtainsView(tk.Frame):
         }
         self.set_super_curtains_values(curtain_values)
         prompt_reboot()
+        
+    def reset_visual_elements(self):
+        """레지스트리 값에 따라 비주얼 요소들을 원래대로 초기화"""
+        # 저장된 레지스트리 값을 다시 로드
+        curtain_values = self.get_current_super_curtains_values()
+
+        # 슬라이더와 입력 필드를 저장된 레지스트리 값으로 설정
+        self.slider_top.set(curtain_values.get('SuperCurtainTop', 0) / 1000)
+        self.entry_top.delete(0, tk.END)
+        self.entry_top.insert(0, str(curtain_values.get('SuperCurtainTop', 0) / 1000))
+
+        self.slider_left.set(curtain_values.get('SuperCurtainLeft', 0) / 1000)
+        self.entry_left.delete(0, tk.END)
+        self.entry_left.insert(0, str(curtain_values.get('SuperCurtainLeft', 0) / 1000))
+
+        self.slider_right.set(curtain_values.get('SuperCurtainRight', 0) / 1000)
+        self.entry_right.delete(0, tk.END)
+        self.entry_right.insert(0, str(curtain_values.get('SuperCurtainRight', 0) / 1000))
+
+        # 이미지 업데이트 (초록/노란색 영역도 함께 업데이트)
+        self.update_image()
+        
+    def back_to_main_menu(self):
+        self.controller.show_frame("MainMenu")
+        self.reset_visual_elements() # 저장을 하지 않았으니, visual elements들을 원래대로 되돌린다
