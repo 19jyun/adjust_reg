@@ -5,7 +5,7 @@ import json
 from new_ui_style import NewUIStyle
 from reboot_prompt import prompt_reboot
 
-BACKUP_FILE_PATH = "registry_backups.json"
+BACKUP_FILE_PATH = "backups.json"
 
 # save_backups 함수를 클래스 외부로 이동시킵니다.
 def save_backups(data):
@@ -55,6 +55,12 @@ class BackupView(tk.Frame):
         self.ui_style.apply_button_style(default_restore_button)
         default_restore_button.pack(side="left", padx=padding_x)
         self.restore_buttons.append(default_restore_button)
+        
+        default_detail_button = tk.Button(default_frame, text="Detail",
+                                  command=lambda: self.show_details(0))
+        self.ui_style.apply_button_style(default_detail_button)
+        default_detail_button.pack(side="left", padx=padding_x)
+
 
         # Slots 1-9 Backup, Restore, and Detail buttons
         for i in range(1, 10):
@@ -95,18 +101,20 @@ class BackupView(tk.Frame):
                 except json.JSONDecodeError:
                     print("Error reading backup file.")
         else:
-            save_backups()
+            save_backups(self.backups)
 
     def backup_registry(self, slot):
         curtains_values = self.get_current_curtains_values()
         super_curtains_values = self.get_current_super_curtains_values()
         right_click_values = self.get_current_right_click_values()
 
+        # 레지스트리 값을 백업에 저장 (CurtainBottom, SuperCurtainBottom을 제외)
         self.backups[slot] = {
-            'Curtains': curtains_values,
-            'Super Curtains': super_curtains_values,
-            'Right-click Zone': right_click_values,
+            'Curtains': {key: curtains_values.get(key, 0) for key in ['CurtainTop', 'CurtainLeft', 'CurtainRight']},
+            'Super Curtains': {key: super_curtains_values.get(key, 0) for key in ['SuperCurtainTop', 'SuperCurtainLeft', 'SuperCurtainRight']},
+            'Right-click Zone': {key: right_click_values.get(key, 0) for key in ['RightClickZoneWidth', 'RightClickZoneHeight']},
         }
+        
         save_backups(self.backups)
         messagebox.showinfo("Backup", f"Registry values backed up in slot {slot + 1}.")
         self.update_buttons()

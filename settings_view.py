@@ -29,6 +29,13 @@ class SettingsView(tk.Frame):
         self.ui_style.apply_button_style(btn_reset_backup)
         btn_reset_backup.pack(pady=padding_y)
 
+        # "Minimize to system tray" 체크박스 추가
+        self.var_minimize_to_tray = tk.BooleanVar()
+        self.var_minimize_to_tray.set(self.load_settings().get('minimize_to_tray', False))  # 초기값 로드
+        checkbox_minimize_to_tray = tk.Checkbutton(self, text="Create a shortcut in system tray", variable=self.var_minimize_to_tray, command=self.save_minimize_to_tray)
+        self.ui_style.apply_checkbox_style(checkbox_minimize_to_tray)
+        checkbox_minimize_to_tray.pack(pady=padding_y)
+
         # "Back" 버튼
         btn_back = tk.Button(self, text="Back", command=lambda: self.controller.show_frame("MainMenu"))
         self.ui_style.apply_button_style(btn_back)
@@ -47,6 +54,15 @@ class SettingsView(tk.Frame):
         with open(self.settings_file, 'w') as file:
             json.dump(settings, file)
         messagebox.showinfo("Settings Saved", "Settings have been saved.")
+
+    def save_minimize_to_tray(self):
+        settings = self.load_settings()
+        settings['minimize_to_tray'] = self.var_minimize_to_tray.get()
+        self.save_settings(settings)
+
+    def save_settings(self, settings):
+        with open(self.settings_file, 'w') as file:
+            json.dump(settings, file, indent=4)
 
     def reset_backup_file(self):
         if messagebox.askyesno("Confirm Reset", "Are you sure you want to reset the backup file to default?"):

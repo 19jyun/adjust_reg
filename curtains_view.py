@@ -15,7 +15,7 @@ class CurtainsView(tk.Frame):
 
         # Registry keys and image paths
         self.registry_path = r'SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad'
-        self.curtain_keys = ['CurtainTop', 'CurtainLeft', 'CurtainRight', 'CurtainBottom']
+        self.curtain_keys = ['CurtainTop', 'CurtainLeft', 'CurtainRight']
         self.trackpad_img_path = "trackpad/gb4p16_trackpad.jpg"
 
         # Trackpad dimensions
@@ -193,3 +193,4 @@ class CurtainsView(tk.Frame):
             'CurtainRight': int(float(self.entry_right.get()) * 1000),
         }
         self.set_curtains_values(curtain_values)
+        prompt_reboot()

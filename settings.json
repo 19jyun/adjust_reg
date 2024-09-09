@@ -1,1 +1,4 @@
-{"require_admin": true}
+{
+    "require_admin": true,
+    "minimize_to_tray": true
+}

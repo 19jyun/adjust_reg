@@ -14,8 +14,8 @@ class SuperCurtainsView(tk.Frame):
         self.ui_style = NewUIStyle(NewUIStyle.get_scaling_factor())
 
         # Registry keys and image paths for Super Curtains
-        self.registry_path = r'SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad\SuperCurtains'
-        self.curtain_keys = ['SuperCurtainTop', 'SuperCurtainLeft', 'SuperCurtainRight', 'SuperCurtainBottom']
+        self.registry_path = r'SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad'
+        self.curtain_keys = ['SuperCurtainTop', 'SuperCurtainLeft', 'SuperCurtainRight']
         self.trackpad_img_path = "trackpad/gb4p16_trackpad.jpg"
 
         # Trackpad dimensions
@@ -192,4 +192,5 @@ class SuperCurtainsView(tk.Frame):
             'SuperCurtainLeft': int(float(self.entry_left.get()) * 1000),
             'SuperCurtainRight': int(float(self.entry_right.get()) * 1000),
         }
-        self.set_curtains_values(curtain_values)
+        self.set_super_curtains_values(curtain_values)
+        prompt_reboot()
