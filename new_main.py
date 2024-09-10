@@ -1,34 +1,32 @@
 import tkinter as tk
 from new_ui_style import NewUIStyle
-from curtains_view import CurtainsView
-from supercurtains_view import SuperCurtainsView
-from rightclick_view import RightClickView
-from settings_view import SettingsView
-from backup_view import BackupView
+from trackpad.curtains_view import CurtainsView
+from trackpad.supercurtains_view import SuperCurtainsView
+from trackpad.rightclick_view import RightClickView
+from settings.settings_view import SettingsView
+from backup.backup_view import BackupView
 import shutil
 import os
 import json
 import psutil
 import subprocess
-import threading
 import ctypes
 import sys
-from pystray import Icon as TrayIcon, Menu as TrayMenu, MenuItem as TrayMenuItem
-from PIL import Image
+from tray_icons import tray_manager  # Updated import for tray manager
 
 def is_admin():
-    """현재 스크립트가 관리자 권한으로 실행되었는지 확인합니다."""
+    """Check if the current script is run as an administrator."""
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
         return False
 
 def run_as_admin(argv=None, debug=False):
-    """스크립트를 관리자 권한으로 재실행합니다."""
+    """Re-run the script as an administrator."""
     if argv is None:
         argv = sys.argv
     if hasattr(sys, '_MEIPASS'):
-        # PyInstaller로 패키지된 실행 파일을 처리합니다.
+        # Handle case for PyInstaller packaged executable
         arguments = map(str, argv[1:])
     else:
         arguments = map(str, argv)
@@ -36,19 +34,26 @@ def run_as_admin(argv=None, debug=False):
     executable = sys.executable
     if debug:
         print('Command line:', executable, argument_line)
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", executable, argument_line, None, 1) #배포시 마지막 0으로 바꾸기 (터미널 안나오게)
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", executable, argument_line, None, 1)  # Change 1 to 0 for no terminal
     sys.exit(0)
-    
+
 def check_first_execution():
-    """프로그램이 처음 실행되었는지 확인"""
-    settings_file = "settings.json"
-    backup_file = "backups.json"
+    """Check if this is the first time the program is being executed."""
+    settings_file = "settings/settings.json"
+    backup_file = "backup/backups.json"
     original_file = "original_registry.json"
 
+    # Ensure the directories for both settings and backup files exist
+    os.makedirs(os.path.dirname(settings_file), exist_ok=True)
+    os.makedirs(os.path.dirname(backup_file), exist_ok=True)
+
+    # Create the settings file if it doesn't exist
     if not os.path.exists(settings_file):
         with open(settings_file, "w") as f:
             json.dump({}, f)
-            
+        print(f"Created empty {settings_file}")
+
+    # Create backup file if it doesn't exist
     if not os.path.exists(backup_file):
         if os.path.exists(original_file):
             try:
@@ -60,7 +65,6 @@ def check_first_execution():
             except Exception as e:
                 print(f"Error copying data from {original_file} to {backup_file}: {e}")
         else:
-            # Create an empty backups.json if original_registry.json does not exist
             with open(backup_file, "w") as f:
                 json.dump({}, f)
             print(f"{original_file} does not exist. Created empty {backup_file}")
@@ -75,13 +79,12 @@ def is_already_running():
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
     return False
-       
+
 class MainApplication(tk.Tk):
     def __init__(self):
-        
         if not is_admin():
-            run_as_admin()  # 관리자 권한으로 재실행 요청
-        
+            run_as_admin()  # Request re-run as admin if necessary
+
         tk.Tk.__init__(self)
         self.title("Trackpad Registry Manager")
         self.scale_factor = NewUIStyle.get_scaling_factor()
@@ -90,7 +93,7 @@ class MainApplication(tk.Tk):
         self.overrideredirect(True)
         self.frames = {}
 
-        # Curtains, SuperCurtains, RightClick 인스턴스 생성
+        # Initialize Curtains, SuperCurtains, RightClick instances
         self.curtains_view = CurtainsView(self, self)
         self.super_curtains_view = SuperCurtainsView(self, self)
         self.right_click_view = RightClickView(self, self)
@@ -103,8 +106,8 @@ class MainApplication(tk.Tk):
         self.create_frames(container)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        # 트레이 아이콘 설정
-        self.start_tray_icon_manager()
+        # Use tray_manager to handle tray icon operations
+        tray_manager.start_main_tray_icon()
 
     def create_frames(self, container):
         for F in (MainMenu, CurtainsView, SuperCurtainsView, RightClickView, BackupView, SettingsView):
@@ -131,46 +134,22 @@ class MainApplication(tk.Tk):
         frame.tkraise()
 
     def on_closing(self):
-        # minimize_to_tray 값이 True이면 창을 닫을 때 트레이로 최소화
         settings = self.load_settings()
         if settings.get('minimize_to_tray', False):
-            self.withdraw()  # 창 숨김
+            self.withdraw()  # Hide the window to the tray
         else:
+            tray_manager.stop_main_tray_icon()  # Stop tray icon when closing the app
             self.quit_application(None, None)
 
-    def start_tray_icon_manager(self):
-        # tray_icon_manager.py 실행
-        if not self.is_tray_icon_manager_running():
-            self.tray_icon_process = subprocess.Popen(['python', 'tray_icon_manager.py', 'new_main.py'])
-
-    def is_tray_icon_manager_running(self):
-        """TrayIcon 관리 스크립트가 실행 중인지 확인"""
-        for process in psutil.process_iter(['pid', 'name', 'cmdline']):
-            try:
-                if 'tray_icon_manager.py' in process.cmdline():
-                    return True
-            except (psutil.AccessDenied, psutil.NoSuchProcess, psutil.ZombieProcess):
-                continue
-        return False
-
     def quit_application(self, icon, item):
-        """프로그램 종료"""
         self.destroy()
-        
-        # 트레이 아이콘 관리자 서브프로세스 종료
-        if hasattr(self, 'tray_icon_process'):
-            if self.tray_icon_process.poll() is None:  # 서브프로세스가 아직 실행 중인지 확인
-                self.tray_icon_process.terminate()
-                self.tray_icon_process.wait()
-        
+        tray_manager.quit_application(None, None)
         os._exit(0)
 
     def load_settings(self):
-        """settings.json 파일에서 설정을 로드."""
-        with open("settings.json", "r") as f:
+        with open("settings/settings.json", "r") as f:
             return json.load(f)
 
-    # 필요한 메서드들을 정의합니다.
     def set_curtains_values(self, values):
         self.curtains_view.set_curtains_values(values)
 
@@ -188,7 +167,6 @@ class MainApplication(tk.Tk):
 
     def get_current_right_click_values(self):
         return self.right_click_view.get_current_right_click_values()
-            
 
 class MainMenu(tk.Frame):
     def __init__(self, parent, controller):
@@ -221,8 +199,6 @@ class MainMenu(tk.Frame):
         btn_quit.pack(pady=10)
 
 if __name__ == "__main__":
-    
-    # Check if the program is already running
     if is_already_running():
         print("An instance of this program is already running.")
         sys.exit(0)

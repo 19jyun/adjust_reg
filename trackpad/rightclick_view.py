@@ -4,20 +4,20 @@ import winreg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from new_ui_style import NewUIStyle
+from backup.backup_view import BackupView
 from reboot_prompt import prompt_reboot
-from backup_view import BackupView
 
-class CurtainsView(tk.Frame):
+class RightClickView(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.ui_style = NewUIStyle(NewUIStyle.get_scaling_factor())
-
+        
         # Registry keys and image paths
         self.registry_path = r'SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad'
-        self.curtain_keys = ['CurtainTop', 'CurtainLeft', 'CurtainRight']
+        self.right_click_keys = ['RightClickZoneWidth', 'RightClickZoneHeight']
         self.trackpad_img_path = "trackpad/gb4p16_trackpad.jpg"
-
+        
         # Trackpad dimensions
         self.trackpad_width_cm = 15
         self.trackpad_height_cm = 10.7
@@ -25,12 +25,12 @@ class CurtainsView(tk.Frame):
         self.trackpad_height_px = 235
         self.trackpad_x = 145
         self.trackpad_y = 245
-        self.max_left_right_cm = 7.5
-        self.max_top_cm = 5
-
+        self.max_width_cm = 7.5
+        self.max_height_cm = 5
+        
         self.cm_to_px_width = self.trackpad_width_px / self.trackpad_width_cm
         self.cm_to_px_height = self.trackpad_height_px / self.trackpad_height_cm
-
+        
         self.setup_ui()
 
     def setup_ui(self):
@@ -45,7 +45,7 @@ class CurtainsView(tk.Frame):
         frame_buttons = tk.Frame(self)
         frame_buttons.pack(pady=padding_y)
 
-        btn_save = tk.Button(frame_buttons, text="Save", command=self.save_curtain_values_with_prompt)
+        btn_save = tk.Button(frame_buttons, text="Save", command=self.save_right_click_values_with_prompt)
         self.ui_style.apply_button_style(btn_save)
         btn_save.grid(row=0, column=0, padx=padding_x)
 
@@ -66,9 +66,8 @@ class CurtainsView(tk.Frame):
         self.canvas.get_tk_widget().pack(padx=padding_x, pady=padding_y)
 
     def create_slider_input(self, padding_x, padding_y):
-        self.create_slider("Curtain Top (Height, cm)", self.max_top_cm, "entry_top", "slider_top", padding_y)
-        self.create_slider("Curtain Left (Width, cm)", self.max_left_right_cm, "entry_left", "slider_left", padding_y)
-        self.create_slider("Curtain Right (Width, cm)", self.max_left_right_cm, "entry_right", "slider_right", padding_y)
+        self.create_slider("Right-Click Zone Width (cm)", self.max_width_cm, "entry_width", "slider_width", padding_y)
+        self.create_slider("Right-Click Zone Height (cm)", self.max_height_cm, "entry_height", "slider_height", padding_y)
 
         self.initialize_slider_values()
 
@@ -91,30 +90,29 @@ class CurtainsView(tk.Frame):
         setattr(self, entry_name, entry)
 
     def initialize_slider_values(self):
-        curtain_values = self.get_current_curtains_values()
-        self.slider_top.set(curtain_values.get('CurtainTop', 0) / 1000)
-        self.slider_left.set(curtain_values.get('CurtainLeft', 0) / 1000)
-        self.slider_right.set(curtain_values.get('CurtainRight', 0) / 1000)
+        right_click_values = self.get_current_right_click_values()
+        self.slider_width.set(right_click_values.get('RightClickZoneWidth', 0) / 1000)
+        self.slider_height.set(right_click_values.get('RightClickZoneHeight', 0) / 1000)
 
-    def get_current_curtains_values(self):
-        curtain_values = {}
+    def get_current_right_click_values(self):
+        right_click_values = {}
         try:
             reg_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, self.registry_path, 0, winreg.KEY_READ)
-            for key in self.curtain_keys:
+            for key in self.right_click_keys:
                 try:
                     value, _ = winreg.QueryValueEx(reg_key, key)
-                    curtain_values[key] = value
+                    right_click_values[key] = value
                 except FileNotFoundError:
-                    curtain_values[key] = 0
+                    right_click_values[key] = 0
             winreg.CloseKey(reg_key)
         except Exception as e:
             print(f"Error reading registry values: {e}")
-        return curtain_values
+        return right_click_values
 
-    def set_curtains_values(self, curtain_values):
+    def set_right_click_values(self, right_click_values):
         try:
             reg_key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, self.registry_path)
-            for key, value in curtain_values.items():
+            for key, value in right_click_values.items():
                 winreg.SetValueEx(reg_key, key, 0, winreg.REG_DWORD, int(value))
             winreg.CloseKey(reg_key)
         except Exception as e:
@@ -124,29 +122,22 @@ class CurtainsView(tk.Frame):
         self.ax.clear()
         self.ax.imshow(self.img)
 
-        curtain_top = float(self.entry_top.get() or 0)
-        curtain_left = float(self.entry_left.get() or 0)
-        curtain_right = float(self.entry_right.get() or 0)
+        right_click_width = float(self.entry_width.get() or 0)
+        right_click_height = float(self.entry_height.get() or 0)
 
-        curtain_top_px = curtain_top * self.cm_to_px_height
-        curtain_left_px = curtain_left * self.cm_to_px_width
-        curtain_right_px = curtain_right * self.cm_to_px_width
+        right_click_width_px = right_click_width * self.cm_to_px_width
+        right_click_height_px = right_click_height * self.cm_to_px_height
 
-        rect_non_curtain = plt.Rectangle((self.trackpad_x, self.trackpad_y), self.trackpad_width_px, self.trackpad_height_px,
-                                         linewidth=1, edgecolor=None, facecolor='yellow', alpha=0.5)
-        self.ax.add_patch(rect_non_curtain)
+        rect_non_click = plt.Rectangle((self.trackpad_x, self.trackpad_y), self.trackpad_width_px, self.trackpad_height_px,
+                                       linewidth=1, edgecolor=None, facecolor='yellow', alpha=0.5)
+        self.ax.add_patch(rect_non_click)
 
-        left_curtain = plt.Rectangle((self.trackpad_x, self.trackpad_y), curtain_left_px, self.trackpad_height_px,
-                                     linewidth=1, edgecolor=None, facecolor='green', alpha=0.5)
-        right_curtain = plt.Rectangle((self.trackpad_x + self.trackpad_width_px, self.trackpad_y), -curtain_right_px,
-                                      self.trackpad_height_px, linewidth=1, edgecolor=None, facecolor='green', alpha=0.5)
-        top_curtain = plt.Rectangle((self.trackpad_x, self.trackpad_y), self.trackpad_width_px, curtain_top_px,
-                                    linewidth=1, edgecolor=None, facecolor='green', alpha=0.5)
+        click_zone = plt.Rectangle((self.trackpad_x + self.trackpad_width_px - right_click_width_px,
+                                    self.trackpad_y + self.trackpad_height_px - right_click_height_px),
+                                   right_click_width_px, right_click_height_px,
+                                   linewidth=1, edgecolor=None, facecolor='green', alpha=0.5)
 
-        self.ax.add_patch(left_curtain)
-        self.ax.add_patch(right_curtain)
-        self.ax.add_patch(top_curtain)
-
+        self.ax.add_patch(click_zone)
         self.canvas.draw()
 
     def update_slider_from_entry(self, entry, slider, max_value):
@@ -178,44 +169,41 @@ class CurtainsView(tk.Frame):
             entry.delete(0, tk.END)
             entry.insert(0, "0.00")
 
-    def save_curtain_values_with_prompt(self):
+    def save_right_click_values_with_prompt(self):
         response = messagebox.askyesnocancel("Save Registry", "Would you like to save the current registry before saving any edits?")
         if response is None:
             return
         elif response:
             self.controller.show_frame("BackupView")
-        self.save_curtain_values()
+        self.save_right_click_values()
 
-    def save_curtain_values(self):
-        curtain_values = {
-            'CurtainTop': int(float(self.entry_top.get()) * 1000),
-            'CurtainLeft': int(float(self.entry_left.get()) * 1000),
-            'CurtainRight': int(float(self.entry_right.get()) * 1000),
+    def save_right_click_values(self):
+        right_click_values = {
+            'RightClickZoneWidth': int(float(self.entry_width.get()) * 1000),
+            'RightClickZoneHeight': int(float(self.entry_height.get()) * 1000),
         }
-        self.set_curtains_values(curtain_values)
+        self.set_right_click_values(right_click_values)
+        print("Right-click zone values saved:", right_click_values)
         prompt_reboot()
         
     def reset_visual_elements(self):
         """레지스트리 값에 따라 비주얼 요소들을 원래대로 초기화"""
         # 저장된 레지스트리 값을 다시 로드
-        curtain_values = self.get_current_curtains_values()
+        curtain_values = self.get_current_right_click_values()
 
         # 슬라이더와 입력 필드를 저장된 레지스트리 값으로 설정
-        self.slider_top.set(curtain_values.get('CurtainTop', 0) / 1000)
-        self.entry_top.delete(0, tk.END)
-        self.entry_top.insert(0, str(curtain_values.get('CurtainTop', 0) / 1000))
+        self.slider_width.set(curtain_values.get('RightClickZoneWidth', 0) / 1000)
+        self.entry_width.delete(0, tk.END)
+        self.entry_width.insert(0, str(curtain_values.get('RightClickZoneWidth', 0) / 1000))
 
-        self.slider_left.set(curtain_values.get('CurtainLeft', 0) / 1000)
-        self.entry_left.delete(0, tk.END)
-        self.entry_left.insert(0, str(curtain_values.get('CurtainLeft', 0) / 1000))
-
-        self.slider_right.set(curtain_values.get('CurtainRight', 0) / 1000)
-        self.entry_right.delete(0, tk.END)
-        self.entry_right.insert(0, str(curtain_values.get('CurtainRight', 0) / 1000))
+        self.slider_height.set(curtain_values.get('RightClickZoneHeight', 0) / 1000)
+        self.entry_height.delete(0, tk.END)
+        self.entry_height.insert(0, str(curtain_values.get('RightClickZoneHeight', 0) / 1000))
 
         # 이미지 업데이트 (초록/노란색 영역도 함께 업데이트)
         self.update_image()
         
+
     def back_to_main_menu(self):
         self.controller.show_frame("MainMenu")
         self.reset_visual_elements() # 저장을 하지 않았으니, visual elements들을 원래대로 되돌린다

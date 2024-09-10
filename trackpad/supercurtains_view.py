@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from new_ui_style import NewUIStyle
 from reboot_prompt import prompt_reboot
-from backup_view import BackupView
+from backup.backup_view import BackupView
 
 class SuperCurtainsView(tk.Frame):
     def __init__(self, parent, controller):

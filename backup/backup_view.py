@@ -5,7 +5,7 @@ import json
 from new_ui_style import NewUIStyle
 from reboot_prompt import prompt_reboot
 
-BACKUP_FILE_PATH = "backups.json"
+BACKUP_FILE_PATH = "backup/backups.json"
 
 # save_backups 함수를 클래스 외부로 이동시킵니다.
 def save_backups(data):
