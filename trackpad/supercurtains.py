@@ -1,24 +1,24 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
+import customtkinter as ctk
 import winreg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from new_ui_style import NewUIStyle
-from reboot_prompt import prompt_reboot
-from backup.backup_view import BackupView
+import os
 
-class SuperCurtainsView(tk.Frame):
+class SuperCurtainsView(ctk.CTkFrame):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+        super().__init__(parent)
         self.controller = controller
-        self.ui_style = NewUIStyle(NewUIStyle.get_scaling_factor())
+        
+        # 스크롤 가능한 프레임을 생성
+        self.scrollable_frame = ctk.CTkScrollableFrame(self, width=500, height=600)
+        self.scrollable_frame.pack(fill="both", expand=True)
 
-        # Registry keys and image paths for Super Curtains
+        # 레지스트리 경로 및 이미지 경로 설정 (Super Curtains용)
         self.registry_path = r'SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad'
         self.curtain_keys = ['SuperCurtainTop', 'SuperCurtainLeft', 'SuperCurtainRight']
-        self.trackpad_img_path = "trackpad/gb4p16_trackpad.jpg"
+        self.trackpad_img_path = os.path.join("trackpad", "gb4p16_trackpad.jpg")
 
-        # Trackpad dimensions
+        # 트랙패드 크기 설정
         self.trackpad_width_cm = 15
         self.trackpad_height_cm = 10.7
         self.trackpad_width_px = 320
@@ -28,75 +28,68 @@ class SuperCurtainsView(tk.Frame):
         self.max_left_right_cm = 7.5
         self.max_top_cm = 5
 
+        # cm를 px로 변환
         self.cm_to_px_width = self.trackpad_width_px / self.trackpad_width_cm
         self.cm_to_px_height = self.trackpad_height_px / self.trackpad_height_cm
 
         self.setup_ui()
 
     def setup_ui(self):
-        # UI Padding and Image
-        padding_x, padding_y = self.ui_style.get_padding()
-        self.setup_image(padding_x, padding_y)
+        # 트랙패드 이미지 설정
+        self.setup_image()
 
-        # Sliders and entries
-        self.create_slider_input(padding_x, padding_y)
+        # 슬라이더 및 입력창 생성
+        self.create_slider_input()
 
-        # Save and Back buttons
-        frame_buttons = tk.Frame(self)
-        frame_buttons.pack(pady=padding_y)
+        # 저장 버튼
+        frame_buttons = ctk.CTkFrame(self.scrollable_frame)
+        frame_buttons.pack(pady=10)
 
-        btn_save = tk.Button(frame_buttons, text="Save", command=self.save_curtain_values_with_prompt)
-        self.ui_style.apply_button_style(btn_save)
-        btn_save.grid(row=0, column=0, padx=padding_x)
+        btn_save = ctk.CTkButton(frame_buttons, text="Save", command=self.save_curtain_values)
+        btn_save.grid(row=0, column=0, padx=10)
 
-        btn_back = tk.Button(frame_buttons, text="Back", command=lambda: self.back_to_main_menu())
-        self.ui_style.apply_button_style(btn_back)
-        btn_back.grid(row=0, column=1, padx=padding_x)
-
-    def setup_image(self, padding_x, padding_y):
-        fig, self.ax = plt.subplots(figsize=((self.ui_style.window_width / self.ui_style.scale_factor) / 180,
-                                             (self.ui_style.window_height / self.ui_style.scale_factor) / 250))
+    def setup_image(self):
+        # 트랙패드 이미지 표시 설정
+        fig, self.ax = plt.subplots(figsize=(6, 4))
         self.img = plt.imread(self.trackpad_img_path)
-        self.ax.imshow(self.img, aspect='auto')
+        self.ax.imshow(self.img)
         self.ax.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)
-        self.ax.set_position([0, 0, 1, 1])
 
-        self.canvas = FigureCanvasTkAgg(fig, master=self)
-        self.canvas.get_tk_widget().pack(padx=padding_x, pady=padding_y)
+        self.canvas = FigureCanvasTkAgg(fig, master=self.scrollable_frame)
+        self.canvas.get_tk_widget().pack(pady=10)
 
-    def create_slider_input(self, padding_x, padding_y):
-        self.create_slider("Super Curtain Top (Height, cm)", self.max_top_cm, "entry_top", "slider_top", padding_y)
-        self.create_slider("Super Curtain Left (Width, cm)", self.max_left_right_cm, "entry_left", "slider_left", padding_y)
-        self.create_slider("Super Curtain Right (Width, cm)", self.max_left_right_cm, "entry_right", "slider_right", padding_y)
+    def create_slider_input(self):
+        self.create_slider("Super Curtain Top (Height, cm)", self.max_top_cm, "entry_top", "slider_top")
+        self.create_slider("Super Curtain Left (Width, cm)", self.max_left_right_cm, "entry_left", "slider_left")
+        self.create_slider("Super Curtain Right (Width, cm)", self.max_left_right_cm, "entry_right", "slider_right")
 
         self.initialize_slider_values()
 
-    def create_slider(self, label_text, max_value, entry_name, slider_name, padding_y):
-        label = tk.Label(self, text=label_text)
-        self.ui_style.apply_label_style(label)
-        label.pack(pady=padding_y)
+    def create_slider(self, label_text, max_value, entry_name, slider_name):
+        label = ctk.CTkLabel(self.scrollable_frame, text=label_text)
+        label.pack(pady=5)
 
-        slider = ttk.Scale(self, from_=0, to=max_value, orient='horizontal', length=self.ui_style.slider_length,
-                           command=lambda x: self.update_entry_from_slider(slider, getattr(self, entry_name)))
+        slider = ctk.CTkSlider(self.scrollable_frame, from_=0, to=max_value, command=lambda value: self.update_entry_from_slider(slider, getattr(self, entry_name)))
         setattr(self, slider_name, slider)
-        slider.pack(pady=padding_y)
+        slider.pack(pady=5)
 
-        entry = tk.Entry(self, justify='center')
-        self.ui_style.apply_entry_style(entry)
+        entry = ctk.CTkEntry(self.scrollable_frame, justify='center')
         entry.insert(0, "0.00")
-        entry.pack(pady=padding_y)
+        entry.pack(pady=5)
         entry.bind("<FocusOut>", lambda event: self.on_entry_complete(entry, slider, max_value))
         entry.bind("<Return>", lambda event: self.on_entry_complete(entry, slider, max_value))
         setattr(self, entry_name, entry)
 
     def initialize_slider_values(self):
-        curtain_values = self.get_current_super_curtains_values()
+        curtain_values = self.get_current_curtains_values()
         self.slider_top.set(curtain_values.get('SuperCurtainTop', 0) / 1000)
         self.slider_left.set(curtain_values.get('SuperCurtainLeft', 0) / 1000)
         self.slider_right.set(curtain_values.get('SuperCurtainRight', 0) / 1000)
 
-    def get_current_super_curtains_values(self):
+        self.update_image()
+
+    def get_current_curtains_values(self):
         curtain_values = {}
         try:
             reg_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, self.registry_path, 0, winreg.KEY_READ)
@@ -111,7 +104,7 @@ class SuperCurtainsView(tk.Frame):
             print(f"Error reading registry values: {e}")
         return curtain_values
 
-    def set_super_curtains_values(self, curtain_values):
+    def set_curtains_values(self, curtain_values):
         try:
             reg_key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, self.registry_path)
             for key, value in curtain_values.items():
@@ -123,6 +116,7 @@ class SuperCurtainsView(tk.Frame):
     def update_image(self):
         self.ax.clear()
         self.ax.imshow(self.img)
+        self.ax.axis('off')
 
         curtain_top = float(self.entry_top.get() or 0)
         curtain_left = float(self.entry_left.get() or 0)
@@ -161,7 +155,7 @@ class SuperCurtainsView(tk.Frame):
 
     def update_entry_from_slider(self, slider, entry):
         value = slider.get()
-        entry.delete(0, tk.END)
+        entry.delete(0, "end")
         entry.insert(0, f"{value:.2f}")
         self.update_image()
 
@@ -172,19 +166,11 @@ class SuperCurtainsView(tk.Frame):
     def format_entry(self, entry):
         try:
             value = float(entry.get())
-            entry.delete(0, tk.END)
+            entry.delete(0, "end")
             entry.insert(0, f"{value:.2f}")
         except ValueError:
-            entry.delete(0, tk.END)
+            entry.delete(0, "end")
             entry.insert(0, "0.00")
-
-    def save_curtain_values_with_prompt(self):
-        response = messagebox.askyesnocancel("Save Registry", "Would you like to save the current registry before saving any edits?")
-        if response is None:
-            return
-        elif response:
-            self.controller.show_frame("BackupView")
-        self.save_curtain_values()
 
     def save_curtain_values(self):
         curtain_values = {
@@ -192,30 +178,26 @@ class SuperCurtainsView(tk.Frame):
             'SuperCurtainLeft': int(float(self.entry_left.get()) * 1000),
             'SuperCurtainRight': int(float(self.entry_right.get()) * 1000),
         }
-        self.set_super_curtains_values(curtain_values)
-        prompt_reboot()
-        
-    def reset_visual_elements(self):
-        """레지스트리 값에 따라 비주얼 요소들을 원래대로 초기화"""
-        # 저장된 레지스트리 값을 다시 로드
-        curtain_values = self.get_current_super_curtains_values()
+        self.set_curtains_values(curtain_values)
 
-        # 슬라이더와 입력 필드를 저장된 레지스트리 값으로 설정
+    def back_to_main_menu(self):
+        self.controller.show_frame("MainMenu")
+        self.reset_visual_elements()
+
+    def reset_visual_elements(self):
+        """레지스트리 값에 따라 비주얼 요소들을 초기화"""
+        curtain_values = self.get_current_curtains_values()
+
         self.slider_top.set(curtain_values.get('SuperCurtainTop', 0) / 1000)
-        self.entry_top.delete(0, tk.END)
+        self.entry_top.delete(0, "end")
         self.entry_top.insert(0, str(curtain_values.get('SuperCurtainTop', 0) / 1000))
 
         self.slider_left.set(curtain_values.get('SuperCurtainLeft', 0) / 1000)
-        self.entry_left.delete(0, tk.END)
+        self.entry_left.delete(0, "end")
         self.entry_left.insert(0, str(curtain_values.get('SuperCurtainLeft', 0) / 1000))
-
-        self.slider_right.set(curtain_values.get('SuperCurtainRight', 0) / 1000)
-        self.entry_right.delete(0, tk.END)
-        self.entry_right.insert(0, str(curtain_values.get('SuperCurtainRight', 0) / 1000))
-
-        # 이미지 업데이트 (초록/노란색 영역도 함께 업데이트)
-        self.update_image()
         
-    def back_to_main_menu(self):
-        self.controller.show_frame("MainMenu")
-        self.reset_visual_elements() # 저장을 하지 않았으니, visual elements들을 원래대로 되돌린다
+        self.slider_right.set(curtain_values.get('SuperCurtainRight', 0) / 1000)
+        self.entry_right.delete(0, "end")
+        self.entry_right.insert(0, str(curtain_values.get('SuperCurtainRight', 0) / 1000))
+        
+        self.update_image()

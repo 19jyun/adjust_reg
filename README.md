@@ -81,6 +81,22 @@ README
 - Add images of actual use
 _______________
 
+
+
+Attribution: The only requirement of the MIT License is that you must include the original license notice in your project. This means that if you distribute your software (whether for free or for profit), you need to provide credit to the original author of CustomTkinter, typically by including a copy of the license in your product’s documentation.
+
+
+MIT License attribute 해야됨 커스팀 tkinter 쓸꺼면
+______________
+
+custom tkinter 로 gui 업그레이드 완료, 주요 기능들 구현 완료
+
+구현해야 되는거
+
+레지스터 수정시 reboot prompt
+save 누르면 백업할지 물어보는 기능 추가
+노트북에서 기능테스트 한번 더
+
 추가 아이디어:
 
 키매핑
