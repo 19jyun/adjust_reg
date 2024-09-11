@@ -48,21 +48,12 @@ def get_battery_info():
     battery = psutil.sensors_battery()
     if battery is None:
         return None
-    secsleft = battery.secsleft
-    if secsleft == psutil.POWER_TIME_UNLIMITED:
-        time_remaining = "N/A"
-    elif secsleft == psutil.POWER_TIME_UNKNOWN:
-        time_remaining = "Calculating..."
-    else:
-        time_remaining = time.strftime("%H:%M:%S", time.gmtime(secsleft))
-        
     return {
         "percent": battery.percent,
         "power_plugged": battery.power_plugged,
-        "secsleft": secsleft,
-        "time_remaining": time_remaining,
+        "secsleft": battery.secsleft if battery.secsleft != psutil.POWER_TIME_UNLIMITED else None,
+        "time_remaining": time.strftime("%H:%M:%S", time.gmtime(battery.secsleft)) if battery.secsleft > 0 else "N/A",
     }
-
 
 def get_power_usage():
     try:
@@ -100,10 +91,11 @@ def update_tray_icon(tray_icon):
         tooltip_text = (
             f"Battery: {battery_info['percent']}% | "
             f"{'Plugged In' if battery_info['power_plugged'] else 'On Battery'}\n"
-            f"{'Charging Rate' if battery_info['power_plugged'] else 'Discharge Rate'}: {power_usage_w:.2f} W\n"
-            f"Time Remaining: {battery_info['time_remaining']}"
+            f"{'Charging Rate' if battery_info['power_plugged'] else 'Discharge Rate'}: {power_usage_w:.2f} W"
         )
         
+        print(tooltip_text)
+
         tray_icon.title = tooltip_text
         tray_icon.icon = create_image(64, 64, power_usage_w, background_color)
 

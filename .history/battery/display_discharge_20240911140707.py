@@ -100,8 +100,7 @@ def update_tray_icon(tray_icon):
         tooltip_text = (
             f"Battery: {battery_info['percent']}% | "
             f"{'Plugged In' if battery_info['power_plugged'] else 'On Battery'}\n"
-            f"{'Charging Rate' if battery_info['power_plugged'] else 'Discharge Rate'}: {power_usage_w:.2f} W\n"
-            f"Time Remaining: {battery_info['time_remaining']}"
+            f"{'Charging Rate' if battery_info['power_plugged'] else 'Discharge Rate'}: {power_usage_w:.2f} W"
         )
         
         tray_icon.title = tooltip_text
