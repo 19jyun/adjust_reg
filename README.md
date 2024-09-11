@@ -42,25 +42,43 @@ There is a high chance that the program may not function as intended under:
 - ARM-based systems
 - Windows 10 or earlier versions of Windows
 
+### Local Machines
+Be aware that this program edits registries of the local machine. Meaning, the adjustments made would apply not only to the current user of the device, but the entire device.
+
 ____________________________________________________________________________________
 
-battery discharge rate 기능 추가! --> 디버깅 완료
+Features to add:
 
-이제는 키보드 부분에 추가해야될듯? 
+features with a question mark are not necessary, implement if possible features.
 
-이 버젼 그대로 데탑에서 돌리니까 wmi 관련 에러가 나온다:
+Trackpad
+- Trackpad width and height customization: Should be able for the user to input the width and height of their own trackpad
+- Hence, green/yellow area, along with the changed maximum width/height, should be adjusted (Same slider, but different max length and rate of change)
 
-PS C:\personal_proj\adjust_reg> python -u "c:\personal_proj\adjust_reg\new_main.py"
-Traceback (most recent call last):
-  File "c:\personal_proj\adjust_reg\new_main.py", line 6, in <module>
-    from settings.settings_view import SettingsView
-  File "c:\personal_proj\adjust_reg\settings\settings_view.py", line 7, in <module>
-    import tray_icons.tray_manager as tray_manager
-  File "c:\personal_proj\adjust_reg\tray_icons\tray_manager.py", line 6, in <module>
-    from battery.display_discharge import stop_monitoring, start_tray_icon
-  File "c:\personal_proj\adjust_reg\battery\display_discharge.py", line 3, in <module>
-    import wmi
-ModuleNotFoundError: No module named 'wmi'
+Keyboard
+- Keymapping (Remapping)
+- Disabling certain keys
+- Macros potentially?
+- Support MacOS mapping?
+
+Battery discharge rate
+- Change polling rate
+
+Taskbar
+- Control transparency
+- Adjust the width/height of taskbar?
+
+UI
+- Rounded cornered windows
+- centered UI elements
+- Possible a theme to make the system more pleasing to watch
+
+System
+- Running in the background so that it consumes the least resources possible
+- Registry path (Local machine vs User)
+
+README
+- Add images of actual use
 _______________
 
 추가 아이디어:
