@@ -3,7 +3,6 @@ import json
 import platform
 import ctypes
 import psutil
-import wmi
 
 def is_first_execution():
     """Check if this is the first time the script is being executed."""
@@ -21,20 +20,15 @@ def save_system_data(data):
 def check_if_laptop():
     """Check if the device is a laptop or desktop."""
     system = platform.system().lower()
-    
     if system == "windows":
         try:
-            # Use WMI to detect the system's chassis type
+            # Check if the device is a laptop or desktop using WMI
+            import wmi
             c = wmi.WMI()
-            for enclosure in c.Win32_SystemEnclosure():
-                if hasattr(enclosure, 'ChassisTypes'):
-                    # Look for ChassisTypes 8, 9, 10, 14 which represent various portable devices
-                    if any(chassis_type in [8, 9, 10, 14] for chassis_type in enclosure.ChassisTypes):
-                        return True  # It's a laptop
-            return False  # Default to desktop if no portable types found
-        except Exception as e:
-            print(f"Error detecting chassis type: {e}")
-            return False
+            chassis_types = [d.ChassisTypes[0] for d in c.Win32_SystemEnclosure()]
+            return 8 in chassis_types  # 8 represents a portable system (laptop)
+        except ImportError:
+            print("WMI module not available")
     return False
 
 def check_if_tkl_keyboard():
