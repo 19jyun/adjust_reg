@@ -87,6 +87,10 @@ class SuperCurtainsView(ctk.CTkFrame):
         self.slider_left.set(curtain_values.get('SuperCurtainLeft', 0) / 1000)
         self.slider_right.set(curtain_values.get('SuperCurtainRight', 0) / 1000)
 
+        self.update_entry_from_slider(self.slider_top, self.entry_top)
+        self.update_entry_from_slider(self.slider_left, self.entry_left)
+        self.update_entry_from_slider(self.slider_right, self.entry_right)
+
         self.update_image()
 
     def get_current_curtains_values(self):

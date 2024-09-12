@@ -90,6 +90,10 @@ class CurtainsView(ctk.CTkFrame):
         self.slider_top.set(curtain_values.get('CurtainTop', 0) / 1000)
         self.slider_left.set(curtain_values.get('CurtainLeft', 0) / 1000)
         self.slider_right.set(curtain_values.get('CurtainRight', 0) / 1000)
+        
+        self.update_entry_from_slider(self.slider_top, self.entry_top)
+        self.update_entry_from_slider(self.slider_left, self.entry_left)
+        self.update_entry_from_slider(self.slider_right, self.entry_right)
 
         self.update_image()
 

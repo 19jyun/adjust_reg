@@ -17,6 +17,7 @@ from tray_icons import tray_manager
 from ctk import uniform_look
 from ctypes import wintypes, windll
 
+ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 # RECT structure definition
 class RECT(ctypes.Structure):
@@ -84,10 +85,10 @@ class MainApp(ctk.CTk):
         if not is_admin():
             run_as_admin()  # Request re-run as admin if necessary
         
-        super().__init__()
-        self.geometry(self.get_window_size())        
+        super().__init__()        
         self.title("Trackpad registry manager")
         self.resizable(False, False)
+        self.geometry(self.get_window_size())
         self.overrideredirect(True)
 
                 # 창을 처음 실행할 때 최상위로 설정
@@ -134,6 +135,19 @@ class MainApp(ctk.CTk):
 
         self.show_main_menu()
 
+    @staticmethod
+    def get_scaling_factor():
+        try:
+            user32 = ctypes.windll.user32
+            user32.SetProcessDPIAware()
+            hdc = user32.GetDC(0)
+            dpi = ctypes.windll.gdi32.GetDeviceCaps(hdc, 88)
+            scaling_factor = dpi / 96.0
+            return scaling_factor
+        except Exception as e:
+            print(f"Error getting DPI scaling: {e}")
+            return 1.0
+
     def get_taskbar_height(self):
         user32 = ctypes.windll.user32
         monitor_info = MONITORINFO()
@@ -147,19 +161,42 @@ class MainApp(ctk.CTk):
         return taskbar_height
     
     def get_window_size(self):
+        scaling_factor = self.get_scaling_factor()
+
         user32 = ctypes.windll.user32
-        screen_width = user32.GetSystemMetrics(0)
-        screen_height = user32.GetSystemMetrics(1)
+        # Get scaled screen width and height (accounting for DPI)
+        #screen_width = int(user32.GetSystemMetrics(0) / scaling_factor)
+        #screen_height = int(user32.GetSystemMetrics(1) / scaling_factor)
         
-        window_width = int(screen_width * 0.26)
-        window_height = int(screen_height * 0.65)
+        screen_width = int(user32.GetSystemMetrics(0))
+        screen_height = int(user32.GetSystemMetrics(1))
         
-        position_right = int((screen_width - window_width) - 5)
-        position_down = int((screen_height - window_height) - 5)
+        # Adjust window size based on DPI scaling factor
+        window_width = int((screen_width * 0.26))
+        window_height = int((screen_height * 0.65))
         
-        taskbar_pos = self.get_taskbar_height()
+        # Calculate taskbar height and subtract it from the vertical position
+        taskbar_height = self.get_taskbar_height()
+
+        # Position the window in the bottom-right corner, above the taskbar
+        position_right = screen_width - window_width - 5  # 5px margin from right edge
+        position_down = screen_height - window_height - taskbar_height - 5  # 5px margin from taskbar
         
-        return f"{window_width}x{window_height}+{position_right}+{position_down - taskbar_pos}"
+        # Adjust window size based on DPI scaling factor
+        window_width = int((screen_width * 0.26)/scaling_factor)
+        window_height = int((screen_height * 0.65)/scaling_factor)
+        
+        # print("Scaling factor:", scaling_factor)
+        # print("Screen width:", screen_width)
+        # print("Screen height:", screen_height)
+        # print("Window width:", window_width)
+        # print("Window height:", window_height)
+        # print("Taskbar height:", taskbar_height)
+        # print("Position right:", position_right)
+        # print("Position down:", position_down)
+        
+        return f"{window_width}x{window_height}+{position_right}+{position_down}"
+
 
 
     def show_main_menu(self):

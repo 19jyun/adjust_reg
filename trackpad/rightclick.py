@@ -85,6 +85,9 @@ class RightClickView(ctk.CTkFrame):
         self.slider_width.set(right_click_values.get('RightClickZoneWidth', 0) / 1000)
         self.slider_height.set(right_click_values.get('RightClickZoneHeight', 0) / 1000)
 
+        self.update_entry_from_slider(self.slider_width, self.entry_width)
+        self.update_entry_from_slider(self.slider_height, self.entry_height)
+
         self.update_image()
 
     def get_current_right_click_values(self):
