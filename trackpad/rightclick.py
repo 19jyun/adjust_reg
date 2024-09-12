@@ -3,7 +3,9 @@ import winreg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
-
+import tkinter as tk
+from tkinter import messagebox
+from reboot_prompt import prompt_reboot
 class RightClickView(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -45,7 +47,7 @@ class RightClickView(ctk.CTkFrame):
         frame_buttons = ctk.CTkFrame(self.scrollable_frame)
         frame_buttons.pack(pady=10)
 
-        btn_save = ctk.CTkButton(frame_buttons, text="Save", command=self.save_right_click_values)
+        btn_save = ctk.CTkButton(frame_buttons, text="Save", command=self.save_rightclick_values_with_prompt)
         btn_save.grid(row=0, column=0, padx=10)
 
     def setup_image(self):
@@ -176,6 +178,7 @@ class RightClickView(ctk.CTkFrame):
             'RightClickZoneHeight': int(float(self.entry_height.get()) * 1000),
         }
         self.set_right_click_values(right_click_values)
+        prompt_reboot()
 
     def back_to_main_menu(self):
         self.controller.show_frame("MainMenu")
@@ -195,3 +198,19 @@ class RightClickView(ctk.CTkFrame):
 
         # 이미지 업데이트 (초록/노란색 영역도 함께 업데이트)
         self.update_image()
+
+    def save_rightclick_values_with_prompt(self):
+        # Prompt user to ask if they want to backup current registry values
+        response = tk.messagebox.askyesnocancel(
+            "Save Registry", 
+            "Would you like to save the current registry before saving any edits?"
+        )
+        
+        if response is None:  # Cancel
+            return
+        elif response:  # Yes, backup current values
+            #Display backup view
+            return
+        
+        # Continue to save new registry values
+        self.save_right_click_values()

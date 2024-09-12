@@ -3,6 +3,10 @@ import winreg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
+import tkinter as tk
+from tkinter import messagebox
+from reboot_prompt import prompt_reboot
+
 
 class SuperCurtainsView(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -45,7 +49,7 @@ class SuperCurtainsView(ctk.CTkFrame):
         frame_buttons = ctk.CTkFrame(self.scrollable_frame)
         frame_buttons.pack(pady=10)
 
-        btn_save = ctk.CTkButton(frame_buttons, text="Save", command=self.save_curtain_values)
+        btn_save = ctk.CTkButton(frame_buttons, text="Save", command=self.save_curtain_values_with_prompt)
         btn_save.grid(row=0, column=0, padx=10)
 
     def setup_image(self):
@@ -183,6 +187,7 @@ class SuperCurtainsView(ctk.CTkFrame):
             'SuperCurtainRight': int(float(self.entry_right.get()) * 1000),
         }
         self.set_curtains_values(curtain_values)
+        prompt_reboot()
 
     def back_to_main_menu(self):
         self.controller.show_frame("MainMenu")
@@ -205,3 +210,19 @@ class SuperCurtainsView(ctk.CTkFrame):
         self.entry_right.insert(0, str(curtain_values.get('SuperCurtainRight', 0) / 1000))
         
         self.update_image()
+        
+    def save_curtain_values_with_prompt(self):
+        # Prompt user to ask if they want to backup current registry values
+        response = tk.messagebox.askyesnocancel(
+            "Save Registry", 
+            "Would you like to save the current registry before saving any edits?"
+        )
+        
+        if response is None:  # Cancel
+            return
+        elif response:  # Yes, backup current values
+            #Display backup view
+            return
+        
+        # Continue to save new registry values
+        self.save_curtain_values()
