@@ -216,17 +216,15 @@ class CurtainsView(ctk.CTkFrame):
         self.update_image()
         
     def save_curtain_values_with_prompt(self):
+        
         # Prompt user to ask if they want to backup current registry values
-        response = tk.messagebox.askyesnocancel(
+        response = tk.messagebox.askyesno(
             "Save Registry", 
-            "Would you like to save the current registry before saving any edits?"
+            "Are you sure you want to save the new registry values?\n\n"
         )
         
         if response is None:  # Cancel
             return
         elif response:  # Yes, backup current values
-            #Display backup view
-            return
-        
-        # Continue to save new registry values
-        self.save_curtain_values()
+            #save
+            self.save_curtain_values()
