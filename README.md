@@ -79,6 +79,10 @@ System
 
 README
 - Add images of actual use
+
+Voltage/Clocks
+- Last feature to be added, not sure if it's possible at the first place
+- Adjusting voltages or clocks to allow for easy (underclocking/undervolting)
 _______________
 
 

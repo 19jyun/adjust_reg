@@ -14,6 +14,7 @@ from trackpad.rightclick import RightClickView
 from settings.settings import SettingsView
 from backup.backups import BackupView
 from tray_icons import tray_manager
+from taskbar.taskbars import TaskbarView
 from ctk import uniform_look
 from ctypes import wintypes, windll
 
@@ -105,6 +106,7 @@ class MainApp(ctk.CTk):
         self.main_buttons = [
             ("Trackpad", self.show_trackpad_menu),
             ("Keyboard", self.show_keyboard_menu),
+            ("Taskbar", self.show_taskbar_view),
             ("Backup", self.show_backup_view),
             ("Settings", self.show_settings_view),
             ("Quit", self.quit_app)
@@ -146,7 +148,7 @@ class MainApp(ctk.CTk):
 
         # Frames for Curtains, Super Curtains, Right Click Zone
         self.frames = {}
-        for F in (CurtainsView, SuperCurtainsView, RightClickView, BackupView, SettingsView):
+        for F in (CurtainsView, SuperCurtainsView, RightClickView, BackupView, SettingsView, TaskbarView):
             frame = F(self.container, self)
             self.frames[F] = frame
             frame.pack_forget()
@@ -281,6 +283,11 @@ class MainApp(ctk.CTk):
         self.hide_main_menu()
         self.back_to_trackpad_button.pack(fill="x", padx=10, pady=5, ipady=5)
         self.show_frame(RightClickView)
+        
+    def show_taskbar_view(self):
+        self.hide_main_menu()
+        self.back_button.pack(fill="x", padx=10, pady=5, ipady=5)
+        self.show_frame(TaskbarView)
 
     def show_backup_view(self):
         self.hide_main_menu()
