@@ -1,5 +1,5 @@
 {
     "require_admin": true,
-    "minimize_to_tray": true,
-    "Display discharge rate": true
+    "minimize_to_tray": false,
+    "Display discharge rate": false
 }

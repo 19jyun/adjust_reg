@@ -3,6 +3,7 @@ import customtkinter as ctk
 import tkinter as tk
 from ctypes import wintypes
 from tkinter import messagebox
+from configuration_manager import ScreenInfo
 import threading
 import win32con
 import win32api
@@ -74,6 +75,8 @@ class KeyShortcutsView(ctk.CTkFrame):
 
         self.shortcut_mappings = []  # To display in the UI
 
+        self.screen_info = ScreenInfo()
+
         # Layout
         self.setup_ui()
 
@@ -131,15 +134,19 @@ class KeyShortcutsView(ctk.CTkFrame):
         self.key_from_dropdowns = []
         self.key_to_dropdowns = []
 
+        self.dropdown_width = self.screen_info.window_width // 4 - 10
+
+        print(self.screen_info.window_width, self.dropdown_width)
+
         # Initialize the first dropdown visible and rest invisible
         for i in range(4):
             dropdown = ctk.CTkComboBox(self.from_key_frame, variable=self.key_from_vars[i], values=list(self.available_keys.keys()), 
-                                    command=lambda value, idx=i: self.dropdown_selected(idx, 'from'))
+                                    command=lambda value, idx=i: self.dropdown_selected(idx, 'from'), width=self.dropdown_width)
             dropdown.pack(side=tk.LEFT, padx=5, pady=5)
             self.key_from_dropdowns.append(dropdown)
 
             dropdown_to = ctk.CTkComboBox(self.to_key_frame, variable=self.key_to_vars[i], values=list(self.available_keys.keys()), 
-                                        command=lambda value, idx=i: self.dropdown_selected(idx, 'to'))
+                                        command=lambda value, idx=i: self.dropdown_selected(idx, 'to'), width=self.dropdown_width)
             dropdown_to.pack(side=tk.LEFT, padx=5, pady=5)
             self.key_to_dropdowns.append(dropdown_to)
 

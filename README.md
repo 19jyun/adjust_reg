@@ -51,6 +51,8 @@ Features to add:
 
 features with a question mark are not necessary, implement if possible features.
 
+All config info regarding the screen is dealt in configuration_manager.py
+
 Trackpad
 - Trackpad width and height customization: Should be able for the user to input the width and height of their own trackpad
 - Hence, green/yellow area, along with the changed maximum width/height, should be adjusted (Same slider, but different max length and rate of change)
@@ -58,7 +60,7 @@ Trackpad
 Keyboard
 - Keymapping (Remapping) - completed
 - Disabling certain keys - Not started (probably add it to Keymapping?)
-- shortcuts - having works on saving the shortkey key combinations and dynamic size for dropdown combobox
+- shortcuts - have to work on combinations and dynamic size for dropdown combobox (dynamic sizing for dropdown fixed)
 - Support MacOS mapping? - not necessary
 
 Battery discharge rate

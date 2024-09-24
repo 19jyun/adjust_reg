@@ -15,6 +15,7 @@ from keyboard.key_mapping import KeyRemapView
 from keyboard.key_shortcuts import KeyShortcutsView
 from settings.settings import SettingsView
 from backup.backups import BackupView
+from configuration_manager import ScreenInfo
 from tray_icons import tray_manager
 from taskbar.taskbars import TaskbarView
 from ctk import uniform_look
@@ -88,9 +89,12 @@ class MainApp(ctk.CTk):
             run_as_admin()
 
         super().__init__()
+        
+        self.screen_info = ScreenInfo()
+        
         self.title("Trackpad Registry Manager")
         self.resizable(False, False)
-        self.geometry(self.get_window_size())
+        self.geometry(self.screen_info.geometry)
         self.overrideredirect(True)
 
         self.attributes("-topmost", True)
@@ -171,57 +175,6 @@ class MainApp(ctk.CTk):
         tray_manager.start_main_tray_icon()
 
         self.show_main_menu()
-
-    @staticmethod
-    def get_scaling_factor():
-        try:
-            user32 = ctypes.windll.user32
-            user32.SetProcessDPIAware()
-            hdc = user32.GetDC(0)
-            dpi = ctypes.windll.gdi32.GetDeviceCaps(hdc, 88)
-            scaling_factor = dpi / 96.0
-            return scaling_factor
-        except Exception as e:
-            print(f"Error getting DPI scaling: {e}")
-            return 1.0
-
-    def get_taskbar_height(self):
-        user32 = ctypes.windll.user32
-        monitor_info = MONITORINFO()
-        monitor_info.cbSize = ctypes.sizeof(MONITORINFO)
-        point = POINT(0, 0)
-        monitor = user32.MonitorFromPoint(point, 1)
-        user32.GetMonitorInfoW(monitor, ctypes.byref(monitor_info))
-        work_area = monitor_info.rcWork
-        screen_area = monitor_info.rcMonitor
-        taskbar_height = screen_area.bottom - work_area.bottom
-        return taskbar_height
-    
-    def get_window_size(self):
-        scaling_factor = self.get_scaling_factor()
-
-        user32 = ctypes.windll.user32
-        
-        screen_width = int(user32.GetSystemMetrics(0))
-        screen_height = int(user32.GetSystemMetrics(1))
-        
-        # Adjust window size based on DPI scaling factor
-        window_width = int((screen_width * 0.26))
-        window_height = int((screen_height * 0.65))
-        
-        # Calculate taskbar height and subtract it from the vertical position
-        taskbar_height = self.get_taskbar_height()
-
-        # Position the window in the bottom-right corner, above the taskbar
-        position_right = screen_width - window_width - 5  # 5px margin from right edge
-        position_down = screen_height - window_height - taskbar_height - 5  # 5px margin from taskbar
-        
-        # Adjust window size based on DPI scaling factor
-        window_width = int((screen_width * 0.26)/scaling_factor)
-        window_height = int((screen_height * 0.65)/scaling_factor)
-        
-        return f"{window_width}x{window_height}+{position_right}+{position_down}"
-
 
     def show_main_menu(self):
         self.hide_all_frames()
