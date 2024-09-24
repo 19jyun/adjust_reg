@@ -56,13 +56,13 @@ Trackpad
 - Hence, green/yellow area, along with the changed maximum width/height, should be adjusted (Same slider, but different max length and rate of change)
 
 Keyboard
-- Keymapping (Remapping)
-- Disabling certain keys
-- Macros potentially?
-- Support MacOS mapping?
+- Keymapping (Remapping) - completed
+- Disabling certain keys - Not started (probably add it to Keymapping?)
+- shortcuts - having works on saving the shortkey key combinations and dynamic size for dropdown combobox
+- Support MacOS mapping? - not necessary
 
 Battery discharge rate
-- Change polling rate
+- Change polling rate - should be done in settings
 
 Taskbar
 - Control transparency

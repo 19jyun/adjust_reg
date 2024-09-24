@@ -11,6 +11,8 @@ from tkinter.messagebox import askyesno
 from trackpad.curtains import CurtainsView
 from trackpad.supercurtains import SuperCurtainsView
 from trackpad.rightclick import RightClickView
+from keyboard.key_mapping import KeyRemapView
+from keyboard.key_shortcuts import KeyShortcutsView
 from settings.settings import SettingsView
 from backup.backups import BackupView
 from tray_icons import tray_manager
@@ -135,7 +137,7 @@ class MainApp(ctk.CTk):
 
         self.keyboard_buttons = [
             ("Key mapping", self.show_key_mapping_view),
-            ("Macro settings", self.show_macro_settings_view),
+            ("Shortcut settings", self.show_shortcut_view),
             ("Back", self.show_main_menu)    
         ]
         
@@ -148,7 +150,7 @@ class MainApp(ctk.CTk):
 
         # Frames for Curtains, Super Curtains, Right Click Zone
         self.frames = {}
-        for F in (CurtainsView, SuperCurtainsView, RightClickView, BackupView, SettingsView, TaskbarView):
+        for F in (CurtainsView, SuperCurtainsView, RightClickView, BackupView, SettingsView, TaskbarView, KeyRemapView, KeyShortcutsView):
             frame = F(self.container, self)
             self.frames[F] = frame
             frame.pack_forget()
@@ -300,12 +302,14 @@ class MainApp(ctk.CTk):
         self.show_frame(SettingsView)
 
     def show_key_mapping_view(self):
+        self.hide_main_menu()
         self.back_to_keyboard_button.pack(fill="x", padx=10, pady=5, ipady=5)
-        pass
+        self.show_frame(KeyRemapView)
     
-    def show_macro_settings_view(self):
+    def show_shortcut_view(self):
+        self.hide_main_menu()
         self.back_to_keyboard_button.pack(fill="x", padx=10, pady=5, ipady=5)
-        pass
+        self.show_frame(KeyShortcutsView)
 
     def load_settings(self):
         with open("settings/settings.json", "r") as f:
