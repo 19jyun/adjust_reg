@@ -1,97 +1,104 @@
 # MyWindows
 
-**MyWindows** is a tool that provides an intuitive interface for customizing various Windows settings and registry entries. It allows advanced control over trackpad, keyboard, and battery management, while also supporting backup and restoration of registry files. This tool is designed for users who want to streamline and personalize their Windows experience.
+**MyWindows** is a powerful tool designed to provide an intuitive interface for customizing various Windows settings and registry entries. Whether you want to fine-tune your trackpad, remap your keyboard, or monitor your battery, MyWindows makes it easy to personalize your Windows experience.
+
+---
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Warning](#warning)
+  - [Tested Conditions](#tested-conditions)
+  - [Unsupported Environments](#unsupported-environments)
+  - [Local Machines](#local-machines)
+- [Features](#features)
+  - [Trackpads](#trackpads)
+    - [Curtains](#curtains)
+    - [Super Curtains](#super-curtains)
+    - [Right-click Zone](#right-click-zone)
+    - [Notes](#notes-trackpads)
+  - [Keyboards](#keyboards)
+    - [Key Mapping](#key-mapping)
+    - [Hotkey Remapping](#hotkey-remapping)
+    - [Notes](#notes-keyboards)
+  - [Taskbar](#taskbar)
+  - [Battery](#battery)
+
+---
 
 ## Installation
-- Download the `MyWindows.exe` file.
+
+- Download the `MyWindows.exe` file and run the installer.
+
+---
 
 ## Warning
 
-### Tested Conditions:
-This program has only been tested under two conditions:
+### Tested Conditions
+This program has been thoroughly tested under the following conditions:
 - x86, Windows 11 Laptop, Intel Core Ultra 5 125H
 - x86, Windows 11 Desktop, Ryzen 5 7500F CPU
 
-### Unsupported Environments:
-There is a high chance that the program may not function as intended under:
+### Unsupported Environments
+The program may not function as expected under:
 - ARM-based systems
 - Windows 10 or earlier versions of Windows
 
 ### Local Machines
-Be aware that this program edits registries of the local machine. Meaning, the adjustments made would apply not only to the current user of the device, but the entire device.
+This tool modifies local machine registries, meaning that any changes made will affect the entire device, not just the current user.
 
-____________________________________________________________________________________
+---
 
 ## Features
 
 ### Trackpads
 
 #### 1. Curtains
-Curtain zones refer to areas that have a lower sensitivity after keyboard use.
-Non-curtain zones refer to areas that stay responsive during or immediately after keyboard use.
-
-This feature could serve to improve the experience on palm rejection.
+Curtain zones reduce touchpad sensitivity after keyboard use. Non-curtain zones remain responsive during or after keyboard use, improving palm rejection on touchpads.
 
 #### 2. Super Curtains
-Super Curtains are the regions of the touchpad that do not trigger an input event. More specifically, these zones are set so that the user cannot start a user interaction from this zone.
+Super Curtains designate areas of the touchpad where input cannot start. However, dragging a finger from an active zone into a super curtain zone will still register input.
 
-This doesn't mean that this specific zone is disabled completely. If the user starts the touchpad use from a Non-Supercurtain zone (e.g., the center of the touchpad) and drag the finger to the edge (the supercurtain zone), the pointer will still react to the user input. 
+Super Curtains disable:
+1. Input that starts from the super curtain zones.
+2. Taps that occur in super curtain zones.
 
-What this disables are two things:
-1. Input starting from the supercurtain zones
-2. Tabs that occur at the supercurtain zones
+#### 3. Right-click Zone
+This feature controls the area of the touchpad where a right-click can be initiated, starting from the bottom-right corner. The size is set in percentage, and the configuration changes based on whether the device is set for right-handed or left-handed use.
 
-#### 3. Right-click zone
-As the name suggests, this controls the right click zone of the touchpad, beginning from the bottom-right corner of the trackpad. The Unit for this feature is in Percentage(%), unlike the units for the two featuers above, which are used in CM.
+#### 4. Notes (Trackpads)
+The touchpad image used is an example, and the actual measurements are determined by the slider and input values. All registry edits can be manually modified or removed through: `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad`. Remember to reboot after making changes.
 
-In addition, the percentage of the width is measured from the right edge in right-handed, and the left edge in left-handed configurations depending on how the mouse buttons option is set.
+More information: [Touchpad Tuning Guidelines](https://learn.microsoft.com/en-us/windows-hardware/design/component-guidelines/touchpad-tuning-guidelines)
 
-#### 4. Notes
-The touchpad image provided for all three features is just an example, and the user should use the numbers of the slider and the input box as the accurate measurement.
-
-In addition, all the edits made to your registry can be manually edited or deleted through the:  'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad' directory in the registry editor (regedit).
-After editing/deleting the registry, make sure to reboot the device.
-
-Refer to the link below for more information:
-https://learn.microsoft.com/en-us/windows-hardware/design/component-guidelines/touchpad-tuning-guidelines
-
+---
 
 ### Keyboards
 
-#### 1. Key mapping
-This feature uses the registry to remap a specific key into another key. More specifically, this remapping uses the registry and the scancode map to remap keys. According registry can be found under: 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout' directory.
-Deleting the Scancode Map registry and rebooting the device should restore the default settings.
+#### 1. Key Mapping
+Remap one key to another using the Scancode Map registry under: `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout`. Deleting this registry and rebooting will reset the keyboard to its default state.
 
-#### 2. Hotkey(shortcuts) remapping
-This feature serves to remap certain hotkeys into another combination of keys. One good example could be remapping Alt + Tab into Ctrl + Tab and vice versa. 
+#### 2. Hotkey Remapping
+Remap hotkey combinations, such as swapping `Alt + Tab` with `Ctrl + Tab`. This feature does not modify the registry but relies on the Python 'keyboard' library. The program must run in the background for hotkey remapping to function.
 
-(This feature isn't complete)
+#### 3. Notes (Keyboards)
+There are alternative tools like Microsoft PowerToys and AutoHotKey, but this feature is integrated for convenience and customization. In case of issues, follow the registry instructions above to restore default settings.
 
-One thing to note is that this feature doesn't use any registry. It uses the 'keyboard' library in Python. Meaning, the program should be running in the background for the remapping to work. This feature is enabled automatically by toggling the switch in the Hotkey remapping menu, thus running the functionality in a separate thread to minimize the consumption of resources.
+---
 
-#### 3. Note
-There are multiple other applications that are already proven to be fail-safe (e.g., Microsoft powertoys, AutoHotKey, etc). However, I chose to implement this functionality simply for two reasons:
-1. Willingness to integrate all customization features within a single program
-2. Powertoys key remapping has certain bugs that impact my personal usage
+### Taskbar (Feature In Development)
+Future updates will include:
+- Adjusting width
+- Adjusting transparency
+- Adjusting roundness
 
-In case of a failure or a significant bug that prevents you from resetting the settings in the program itself, please refer to the explanations above to set the settings to default. 
-
-### Taskbar (Not made yet)
-
-#### 1. Adjusting Width
-
-#### 2. Adjusting transparency
-
-#### 3. Adjusting roundness
+---
 
 ### Battery
 
-#### 1. Displaying battery charge/discharge rate
-This feature displays the battery charge/discharge rate in the taskbar icon tray. The color of the icon is yellow if discharging and green if charging.
+#### 1. Display Battery Charge/Discharge Rate
+This feature displays the battery charge or discharge rate in the system tray. The icon changes color based on charging (green) or discharging (yellow). You can disable the feature via a right-click on the icon or in the settings menu.
 
-This feature, like the hotkey remapping feature, runs in a separate thread to minimize resource consumption.
-
-You can always right-click the icon and disable the feature, or go into the settings menu to toggle the option.
 
 ___________________________________________________
 
