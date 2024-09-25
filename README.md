@@ -129,7 +129,6 @@ Keyboard
 - shortcuts - have to work on combinations and dynamic size for dropdown combobox (dynamic sizing for dropdown fixed)
 
 알트탭 고쳐야됨
-shortcuts 저장할때 어째선지 가장 최근것만 저장됨, 로드할때 array에 현재 이미 저장되어 있는 내용들 load 해줘야될듯
 
 Battery discharge rate
 - Change polling rate - should be done in settings

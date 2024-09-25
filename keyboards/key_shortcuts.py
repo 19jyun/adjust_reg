@@ -146,7 +146,10 @@ class KeyShortcutsView(ctk.CTkFrame):
             'to_modifiers': keys_to[:-1],  # Modifiers for 'to'
             'to_key': keys_to[-1]  # Last key in 'to' combination
         }
-        shortcut_remappings[shortcut['key']] = shortcut
+        # Use the full from_combination as the key
+        from_combination = '+'.join(keys_from)
+        
+        shortcut_remappings[from_combination] = shortcut
 
         # Update UI
         remapping = f"{' + '.join(keys_from)} -> {' + '.join(keys_to)}"
@@ -227,6 +230,19 @@ class KeyShortcutsView(ctk.CTkFrame):
         from_combination = '+'.join(shortcut['modifiers'] + [shortcut['key']])
         to_combination = '+'.join(shortcut['to_modifiers'] + [shortcut['to_key']])
 
+        if len(shortcut['modifiers']) == 0 and len(shortcut['to_modifiers']) == 0:
+            # One-to-one remapping
+            from_key = shortcut['key']
+            to_key = shortcut['to_key']
+            self.register_remap(from_key, to_key)
+        else:
+            # If remapping the alt+tab functionality to another key, handle separately
+            if to_combination == "alt+tab":
+                keyboard.add_hotkey(from_combination, self.simulate_alt_tab, suppress=True)
+            else:
+                # Use keyboard.add_hotkey to map the from combination to the to combination
+                keyboard.add_hotkey(from_combination, lambda: keyboard.press_and_release(to_combination), suppress=True)
+
         #If remapping the alt tab functionality to another key
         if to_combination == "alt+tab":
             keyboard.add_hotkey(from_combination, self.simulate_alt_tab(from_combination), suppress=True)
@@ -250,3 +266,11 @@ class KeyShortcutsView(ctk.CTkFrame):
 
         # Release Alt when Ctrl is released
         keyboard.release('alt')
+        
+    # Remaps a key to another key
+    def register_remap(self, from_key, to_key):
+        """
+        Register a remap using the keyboard library.
+        Maps the 'from' key to the 'to' key.
+        """
+        keyboard.remap_key(from_key, to_key)
