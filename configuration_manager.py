@@ -39,14 +39,14 @@ class ScreenInfo:
         
         self.geometry = self.get_window_size()
         
-        print("Initialized ScreenInfo")
-        print(f"Screen width: {self.screen_width}")
-        print(f"Screen height: {self.screen_height}")
-        print(f"Window width: {self.window_width}")
-        print(f"Window height: {self.window_height}")
-        print(f"DPI: {self.dpi}")
-        print(f"Taskbar height: {self.taskbar_height}")
-        print(f"Geometry: {self.geometry}")
+        # print("Initialized ScreenInfo")
+        # print(f"Screen width: {self.screen_width}")
+        # print(f"Screen height: {self.screen_height}")
+        # print(f"Window width: {self.window_width}")
+        # print(f"Window height: {self.window_height}")
+        # print(f"DPI: {self.dpi}")
+        # print(f"Taskbar height: {self.taskbar_height}")
+        # print(f"Geometry: {self.geometry}")
         
     @staticmethod
     def get_scaling_factor():
