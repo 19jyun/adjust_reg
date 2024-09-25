@@ -47,6 +47,13 @@ The program may not function as expected under:
 ### Local Machines
 This tool modifies local machine registries, meaning that any changes made will affect the entire device, not just the current user.
 
+### Unexpected behavior
+Behaviors such as editing the registry through regedit and MyWindows simultaneously or using multiple keyboard-customizing programs could cause unexpected behavior.
+
+If you lose track of the program, you can always right-click the tray icon for registry and bring it up to the surface.
+
+![Tray Icon](bring_to_surface.png)
+
 ---
 
 ## Features
@@ -67,7 +74,11 @@ Super Curtains disable:
 This feature controls the area of the touchpad where a right-click can be initiated, starting from the bottom-right corner. The size is set in percentage, and the configuration changes based on whether the device is set for right-handed or left-handed use.
 
 #### 4. Notes (Trackpads)
-The touchpad image used is an example, and the actual measurements are determined by the slider and input values. All registry edits can be manually modified or removed through: `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad`. Remember to reboot after making changes.
+The touchpad image used is an example, and the actual measurements are determined by the slider and input values. 
+
+![Touchpad Example](trackpad_example.png)
+
+All registry edits can be manually modified or removed through: `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad`. Remember to reboot after making changes.
 
 More information: [Touchpad Tuning Guidelines](https://learn.microsoft.com/en-us/windows-hardware/design/component-guidelines/touchpad-tuning-guidelines)
 
@@ -76,10 +87,10 @@ More information: [Touchpad Tuning Guidelines](https://learn.microsoft.com/en-us
 ### Keyboards
 
 #### 1. Key Mapping
-Remap one key to another using the Scancode Map registry under: `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout`. Deleting this registry and rebooting will reset the keyboard to its default state.
+This feature remaps one key to another using the Scancode Map registry under: `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout`. Deleting this registry and rebooting will reset the keyboard to its default state.
 
 #### 2. Hotkey Remapping
-Remap hotkey combinations, such as swapping `Alt + Tab` with `Ctrl + Tab`. This feature does not modify the registry but relies on the Python 'keyboard' library. The program must run in the background for hotkey remapping to function.
+This feature remaps hotkey combinations, such as `Alt + Tab` feature to `Ctrl + Tab`. This feature does not modify the registry but relies on the Python 'keyboard' library. The program must run in the background for hotkey remapping to function.
 
 #### 3. Notes (Keyboards)
 There are alternative tools like Microsoft PowerToys and AutoHotKey, but this feature is integrated for convenience and customization. In case of issues, follow the registry instructions above to restore default settings.
@@ -99,7 +110,7 @@ Future updates will include:
 #### 1. Display Battery Charge/Discharge Rate
 This feature displays the battery charge or discharge rate in the system tray. The icon changes color based on charging (green) or discharging (yellow). You can disable the feature via a right-click on the icon or in the settings menu.
 
-
+![Tray Icon Example](trayicon_example1.png)
 ___________________________________________________
 
 Features to add:
