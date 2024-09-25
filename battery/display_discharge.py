@@ -6,6 +6,8 @@ import pystray
 from threading import Thread, Event
 import time
 import tray_icons.tray_manager as tray_manager
+import os
+import json
 
 # Global stop_event definition
 stop_event = Event()
@@ -111,6 +113,16 @@ def update_tray_icon(tray_icon):
 
 def stop_monitoring(icon):
     """Stop the monitoring by setting the stop_event and stopping the icon."""
+    
+    settings_path = os.path.join(os.path.dirname(__file__), '../settings/settings.json')
+    with open(settings_path, 'r') as file:
+        settings = json.load(file)
+    
+    settings["Display discharge rate"] = False
+    
+    with open(settings_path, 'w') as file:
+        json.dump(settings, file, indent=4)
+    
     stop_event.set()
     icon.stop()
 

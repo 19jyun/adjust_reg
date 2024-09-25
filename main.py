@@ -18,35 +18,7 @@ from backup.backups import BackupView
 from configuration_manager import ScreenInfo
 from tray_icons import tray_manager
 from taskbar.taskbars import TaskbarView
-from ctk import uniform_look
-from ctypes import wintypes, windll
-
-ctypes.windll.shcore.SetProcessDpiAwareness(2)
-
-# RECT structure definition
-class RECT(ctypes.Structure):
-    _fields_ = [
-        ("left", wintypes.LONG),
-        ("top", wintypes.LONG),
-        ("right", wintypes.LONG),
-        ("bottom", wintypes.LONG)
-    ]
-
-# MONITORINFO structure definition
-class MONITORINFO(ctypes.Structure):
-    _fields_ = [
-        ("cbSize", wintypes.DWORD),
-        ("rcMonitor", RECT),
-        ("rcWork", RECT),
-        ("dwFlags", wintypes.DWORD)
-    ]
-
-# POINT structure definition
-class POINT(ctypes.Structure):
-    _fields_ = [
-        ("x", wintypes.LONG),
-        ("y", wintypes.LONG)
-    ]
+from ctypes import windll
     
 
 def is_admin():

@@ -1,0 +1,13 @@
+__pycache__/
+.vscode
+*.pyc
+cph/
+
+settings/settings.json
+settings/system_data.json
+
+backup/backups.json
+backup/adjust_reg.code-workspace
+
+first_run_flag.txt
+shortcuts.json

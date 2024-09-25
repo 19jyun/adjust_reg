@@ -227,6 +227,26 @@ class KeyShortcutsView(ctk.CTkFrame):
         from_combination = '+'.join(shortcut['modifiers'] + [shortcut['key']])
         to_combination = '+'.join(shortcut['to_modifiers'] + [shortcut['to_key']])
 
-        # Use keyboard.add_hotkey to map the from combination to the to combination
-        keyboard.add_hotkey(from_combination, lambda: keyboard.press_and_release(to_combination))
+        #If remapping the alt tab functionality to another key
+        if to_combination == "alt+tab":
+            keyboard.add_hotkey(from_combination, self.simulate_alt_tab(from_combination), suppress=True)
+        else:
+            # Use keyboard.add_hotkey to map the from combination to the to combination
+            keyboard.add_hotkey(from_combination, lambda: keyboard.press_and_release(to_combination), suppress=True)
+            
+    def simulate_alt_tab(self, from_combination):
+        """
+        Simulate Alt + Tab behavior (with release detection).
+        Simulates holding Alt and pressing Tab multiple times while Alt is held.
+        """
+        # Press Alt (simulate holding it down)
+        keyboard.press('alt')
 
+        # Continuously press and release Tab as long as Ctrl is held down
+        while keyboard.is_pressed('ctrl'):
+            print("Ctrl is pressed")
+            keyboard.press_and_release('tab')
+            keyboard.sleep(0.2)  # Small delay to simulate user pressing Tab
+
+        # Release Alt when Ctrl is released
+        keyboard.release('alt')
