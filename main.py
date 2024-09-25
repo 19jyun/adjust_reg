@@ -11,8 +11,8 @@ from tkinter.messagebox import askyesno
 from trackpad.curtains import CurtainsView
 from trackpad.supercurtains import SuperCurtainsView
 from trackpad.rightclick import RightClickView
-from keyboard.key_mapping import KeyRemapView
-from keyboard.key_shortcuts import KeyShortcutsView
+from keyboards.key_mapping import KeyRemapView
+from keyboards.key_shortcuts import KeyShortcutsView
 from settings.settings import SettingsView
 from backup.backups import BackupView
 from configuration_manager import ScreenInfo

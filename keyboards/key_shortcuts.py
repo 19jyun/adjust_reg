@@ -148,7 +148,7 @@ class KeyShortcutsView(ctk.CTkFrame):
 
         self.dropdown_width = self.screen_info.window_width // 4 - 10
 
-        print(self.screen_info.window_width, self.dropdown_width)
+        print("Information on windows: ", self.screen_info.window_width, self.dropdown_width)
 
         # Initialize the first dropdown visible and rest invisible
         for i in range(4):
@@ -171,8 +171,8 @@ class KeyShortcutsView(ctk.CTkFrame):
         upper_button_frame.pack(pady=10)
 
         # Add and display shortcuts
-        ctk.CTkButton(upper_button_frame, text="Delete Upper Key-Combinations", command=self.delete_last_from_dropdown).pack(side=tk.LEFT, padx=5)
-        ctk.CTkButton(upper_button_frame, text="Delete Lower Key-Combinations", command=self.delete_last_to_dropdown).pack(side=tk.LEFT, padx=5)
+        ctk.CTkButton(upper_button_frame, text="Delete \u2191", command=self.delete_last_from_dropdown).pack(side=tk.LEFT, padx=5)
+        ctk.CTkButton(upper_button_frame, text="Delete \u2193", command=self.delete_last_to_dropdown).pack(side=tk.LEFT, padx=5)
         ctk.CTkButton(upper_button_frame, text="Add Shortcut", command=self.add_shortcut).pack(pady=10)
 
         self.scrollable_frame = ctk.CTkScrollableFrame(self, width=self.screen_info.window_width*0.8, height=self.screen_info.window_height*0.3)

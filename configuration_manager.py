@@ -39,6 +39,15 @@ class ScreenInfo:
         
         self.geometry = self.get_window_size()
         
+        print("Initialized ScreenInfo")
+        print(f"Screen width: {self.screen_width}")
+        print(f"Screen height: {self.screen_height}")
+        print(f"Window width: {self.window_width}")
+        print(f"Window height: {self.window_height}")
+        print(f"DPI: {self.dpi}")
+        print(f"Taskbar height: {self.taskbar_height}")
+        print(f"Geometry: {self.geometry}")
+        
     @staticmethod
     def get_scaling_factor():
         try:
@@ -79,9 +88,6 @@ class ScreenInfo:
         window_width = int((screen_width * 0.26))
         window_height = int((screen_height * 0.65))
         
-        self.window_width = window_width
-        self.window_height = window_height
-        
         # Calculate taskbar height and subtract it from the vertical position
         taskbar_height = self.get_taskbar_height()
 
@@ -90,10 +96,13 @@ class ScreenInfo:
         position_down = screen_height - window_height - taskbar_height - 5  # 5px margin from taskbar
         
         # Adjust window size based on DPI scaling factor
-        window_width = int((screen_width * 0.26)/scaling_factor)
-        window_height = int((screen_height * 0.65)/scaling_factor)
+        dpi_window_width = int((screen_width * 0.26)/scaling_factor)
+        dpi_window_height = int((screen_height * 0.65)/scaling_factor)
         
-        return f"{window_width}x{window_height}+{position_right}+{position_down}"
+        self.window_width = dpi_window_width
+        self.window_height = dpi_window_height
+        
+        return f"{dpi_window_width}x{dpi_window_height}+{position_right}+{position_down}"
     
 if __name__ == "__main__":
     screen_info = ScreenInfo()
