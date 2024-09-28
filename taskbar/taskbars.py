@@ -6,14 +6,17 @@ from tkinter import messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from reboot_prompt import prompt_reboot
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageTk
 import numpy as np
+from configuration_manager import ScreenInfo
 
 
 class TaskbarView(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        
+        self.screen_info = ScreenInfo()
         
         # Scrollable frame for taskbar settings
         self.scrollable_frame = ctk.CTkScrollableFrame(self, width=500, height=600)
@@ -29,7 +32,7 @@ class TaskbarView(ctk.CTkFrame):
         self.taskbar_img_path = os.path.join(base_dir, "taskbar.png")
         
         # Max values for sliders
-        self.max_taskbar_size = 10.0  # Taskbar length max value
+        self.max_taskbar_size = 100.0  # Taskbar length max value
         self.max_taskbar_transparency = 100.0  # Transparency max value
 
         self.taskbar_positions = {"Bottom": 0x03, "Top": 0x01}
@@ -60,52 +63,38 @@ class TaskbarView(ctk.CTkFrame):
         btn_save.pack(pady=5)
 
     def setup_image(self):
-        # Create a figure for displaying the images
-        fig, self.ax = plt.subplots(figsize=(6, 4))
+        """Load and display the background and taskbar images with CTkImage."""
 
-        # Check if the background image path exists
-        if not os.path.exists(self.background_img_path):
-            print(f"Error: Background image not found at {self.background_img_path}")
-            return
+        # Calculate dimensions for the background image dynamically
+        image_width = self.screen_info.window_width
+        background_image_width = int(self.screen_info.window_width * 0.8)  # Ensure this is an integer
+        screen_ratio = self.screen_info.screen_width / self.screen_info.screen_height
+        background_image_height = int(background_image_width / screen_ratio)  # Ensure this is an integer
 
-        # Check if the taskbar image path exists
-        if not os.path.exists(self.taskbar_img_path):
-            print(f"Error: Taskbar image not found at {self.taskbar_img_path}")
-            return
+        taskbar_ratio = 40.55  # width is 40.55 times larger than height
+        taskbar_width = background_image_width
+        taskbar_height = int(taskbar_width / taskbar_ratio)  # Ensure this is an integer
 
-        # Load the background and taskbar images using plt.imread
-        self.background_image = plt.imread(self.background_img_path)  # Load background image
-        self.taskbar_image = plt.imread(self.taskbar_img_path)  # Load taskbar image
+        # Load and resize background image
+        self.background_image = Image.open(self.background_img_path)
+        self.background_image_resized = self.background_image.resize((background_image_width, background_image_height), Image.Resampling.LANCZOS)  # Resize to fit
+        self.background_image_ctk = ctk.CTkImage(self.background_image_resized, size=(background_image_width, background_image_height))  # Convert to CTkImage
 
-        # Get dimensions of the images
-        background_height, background_width, _ = self.background_image.shape
-        taskbar_height, taskbar_width, _ = self.taskbar_image.shape
+        # Load and resize taskbar image
+        self.taskbar_image = Image.open(self.taskbar_img_path)
+        self.taskbar_image_resized = self.taskbar_image.resize((taskbar_width, taskbar_height), Image.Resampling.LANCZOS)  # Resize to fit at bottom
+        self.taskbar_image_ctk = ctk.CTkImage(self.taskbar_image_resized, size=(taskbar_width, taskbar_height))  # Convert to CTkImage
 
-        # Resize taskbar to match the background width (proportionally scale)
-        scaling_factor = background_width / taskbar_width
-        taskbar_resized_height = int(taskbar_height * scaling_factor)
-        taskbar_resized = Image.fromarray((self.taskbar_image * 255).astype(np.uint8))
-        taskbar_resized = taskbar_resized.resize((background_width, taskbar_resized_height), Image.Resampling.LANCZOS)
-        self.taskbar_image_resized = np.array(taskbar_resized) / 255.0  # Convert back to numpy array (normalize)
+        # Create and place background image label
+        self.label_background_img = ctk.CTkLabel(self.scrollable_frame, image=self.background_image_ctk, text="", width=background_image_width, height=background_image_height)
+        self.label_background_img.pack()
+        
+        # Create and place taskbar image label
+        self.xa = (image_width - taskbar_width) // 2 - 10 # Center the taskbar image
+        self.label_taskbar_img = ctk.CTkLabel(self.scrollable_frame, image=self.taskbar_image_ctk, text="", width=taskbar_width, height=taskbar_height, fg_color="transparent")
+        self.label_taskbar_img.place(x = self.xa, y=background_image_height - taskbar_height)  # Adjust position to overlay at bottom of the background image
 
-        # Display the background image first
-        self.ax.imshow(self.background_image, extent=[0, background_width, 0, background_height], zorder=0)  # Background image
-
-        # Initial position for the taskbar (bottom of the background)
-        self.taskbar_y_position = 0  # Start at bottom of the plot
-        self.taskbar_x_position = 0  # Align taskbar with the left edge of the background
-
-        # Display the taskbar image on top of the background
-        self.ax.imshow(self.taskbar_image_resized, extent=[self.taskbar_x_position, background_width,
-                                                        self.taskbar_y_position, taskbar_resized_height], zorder=1)
-
-        # Hide the axes for a clean display
-        self.ax.axis('off')
-
-        # Embed the matplotlib figure into the tkinter window
-        self.canvas = FigureCanvasTkAgg(fig, master=self.scrollable_frame)
-        self.canvas.get_tk_widget().pack(pady=10)
-
+        self.label_height_position = background_image_height - taskbar_height
 
     def update_image(self, source=None):
         """Updates the taskbar overlay on the background based on the user inputs for position, length, and transparency."""
@@ -113,20 +102,58 @@ class TaskbarView(ctk.CTkFrame):
         if source:
             print(f"Updating image based on {source}")
 
+            # Initialize variables to store current states if they don't exist
+            if not hasattr(self, 'current_width'):
+                self.current_width = self.taskbar_image_resized.width
+            if not hasattr(self, 'current_height'):
+                self.current_height = self.taskbar_image_resized.height
+            if not hasattr(self, 'current_transparency'):
+                self.current_transparency = 255  # Default transparency value (fully opaque)
+            if not hasattr(self, 'label_position'):
+                self.label_position = self.background_image_resized.height - self.current_height  # Default to bottom position
+
+            # Only update the relevant value based on the source
             if source == "slider_taskbar_length" or source == "entry_taskbar_length":
                 print(f"Taskbar length: {self.slider_taskbar_length.get()}")
-                
+
+                # Calculate new taskbar width based on the slider value
+                self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.slider_taskbar_length.get())
+
             elif source == "slider_taskbar_transparency" or source == "entry_taskbar_transparency":
                 print(f"Taskbar transparency: {self.slider_taskbar_transparency.get()}")
-            
+
+                # Calculate and store the transparency value
+                self.current_transparency = int(255 * (self.slider_taskbar_transparency.get() / self.max_taskbar_transparency))  # Alpha value (0-255)
+
             elif source == "position_dropdown":
                 print(f"Taskbar position: {self.position_var.get()}")
-            
-            elif source == "auto_hide_dropdown":
-                print(f"Auto-hide taskbar: {self.auto_hide_var.get()}")
-            
-            else:
-                print("Unknown source")
+
+                # Set the taskbar position based on dropdown selection
+                if self.position_var.get() == "Top":
+                    self.label_position = 0  # Move to top of the background image
+                else:  # Default to bottom position
+                    self.label_position = self.background_image_resized.height - self.current_height
+
+            # Apply the updates to the image and label at the end
+            # 1. Resize the taskbar image based on the current width and height
+            self.taskbar_image_resized = self.taskbar_image.resize((self.current_width, self.current_height), Image.Resampling.LANCZOS)
+
+            # 2. Apply the current transparency to the taskbar image
+            taskbar_rgba = self.taskbar_image_resized.convert("RGBA")
+            data = np.array(taskbar_rgba)
+            data[:, :, 3] = self.current_transparency  # Modify the alpha channel
+            self.taskbar_image_resized = Image.fromarray(data)
+
+            # 3. Convert to a CTkImage and update the label image
+            self.taskbar_image_ctk = ctk.CTkImage(self.taskbar_image_resized, size=(self.current_width, self.current_height))
+            self.label_taskbar_img.configure(image=self.taskbar_image_ctk, width=self.current_width, height=self.current_height, fg_color="transparent")
+
+            # 4. Position the label based on the updated x and y values
+            self.xa = (self.screen_info.window_width - self.current_width) // 2 - 10
+            self.label_taskbar_img.place(x=self.xa, y=self.label_position)
+
+            # Should probably update the code so that there are less burdon on the cpu
+            # Update required so that the taskbar transparency is shown
 
     def create_slider(self, label_text, max_value, entry_name, slider_name):
         """Create a slider and an entry that are synchronized."""
@@ -159,6 +186,7 @@ class TaskbarView(ctk.CTkFrame):
 
         # Trigger update_image when the position changes
         self.position_var.trace_add('write', lambda *args: self.update_image("position_dropdown"))
+
 
     def create_auto_hide_dropdown(self):
         # Auto-hide taskbar selection
