@@ -7,6 +7,7 @@ import winreg
 import tkinter as tk
 from tkinter import messagebox
 from tray_icons import tray_manager
+from widgets.button import BouncingButton
 
 # settings.json 파일 경로
 SETTINGS_PATH = os.path.join(os.path.dirname(__file__), "settings.json")
@@ -45,7 +46,7 @@ class SettingsView(ctk.CTkFrame):
         self.admin_rights_checkbox = ctk.CTkCheckBox(self, text="Automatically give admin rights", variable=self.admin_rights_var, command=self.toggle_admin_rights)
         self.admin_rights_checkbox.pack(pady=10)
 
-        self.reset_button = ctk.CTkButton(self, text="Reset All Changes", command=self.reset_options)
+        self.reset_button = BouncingButton(self, text="Reset All Changes", command=self.reset_options)
         self.reset_button.pack(pady=10)
 
         self.minimize_to_tray_var = ctk.BooleanVar(value=self.settings.get("minimize_to_tray", False))

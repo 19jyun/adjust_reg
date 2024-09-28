@@ -2,11 +2,12 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 from configuration_manager import ScreenInfo
-from widgets.animated_switch import AnimatedSwitch
+from widgets.switch import AnimatedSwitch
 import keyboard
 import json
 import os
 import pywinstyles
+from widgets.button import BouncingButton
 
 # Dictionary to store shortcut remappings
 shortcut_remappings = {}
@@ -53,7 +54,7 @@ class KeyShortcutsView(ctk.CTkFrame):
 
     def setup_ui(self):
         
-        self.animated_switch = AnimatedSwitch(self, width=80, height=30, bg_color="gray", fg_color="green", handle_color="white", command=self.toggle_shortcuts)
+        self.animated_switch = AnimatedSwitch(self, command = self.toggle_shortcuts)
         self.animated_switch.pack(pady=10)
         
         ctk.CTkLabel(self, text="Select Key Combination to Remap:").pack(pady=5)
@@ -94,9 +95,9 @@ class KeyShortcutsView(ctk.CTkFrame):
         upper_button_frame.pack(pady=10)
 
         # Add and display shortcuts
-        ctk.CTkButton(upper_button_frame, text="Delete \u2191", command=self.delete_last_from_dropdown).pack(side=tk.LEFT, padx=5)
-        ctk.CTkButton(upper_button_frame, text="Delete \u2193", command=self.delete_last_to_dropdown).pack(side=tk.LEFT, padx=5)
-        ctk.CTkButton(upper_button_frame, text="Add Shortcut", command=self.add_shortcut).pack(pady=10)
+        BouncingButton(upper_button_frame, text="Delete \u2191", command=self.delete_last_from_dropdown).pack(side=tk.LEFT, padx=5)
+        BouncingButton(upper_button_frame, text="Delete \u2193", command=self.delete_last_to_dropdown).pack(side=tk.LEFT, padx=5)
+        BouncingButton(upper_button_frame, text="Add Shortcut", command=self.add_shortcut).pack(pady=10)
 
         self.scrollable_frame = ctk.CTkScrollableFrame(self, width=self.screen_info.window_width*0.8, height=self.screen_info.window_height*0.3)
         self.scrollable_frame.pack(pady=10)
@@ -105,8 +106,8 @@ class KeyShortcutsView(ctk.CTkFrame):
         button_frame.pack(pady=10)
 
         # Add delete buttons for "from" and "to"
-        ctk.CTkButton(button_frame, text="Save Shortcuts", command=self.save_shortcuts).pack(side=tk.LEFT, padx=10)
-        ctk.CTkButton(button_frame, text="Reset", command=self.reset_shortcuts).pack(side=tk.LEFT, padx=10)
+        BouncingButton(button_frame, text="Save Shortcuts", command=self.save_shortcuts).pack(side=tk.LEFT, padx=10)
+        BouncingButton(button_frame, text="Reset", command=self.reset_shortcuts).pack(side=tk.LEFT, padx=10)
 
     def toggle_shortcuts(self):
         print("Toggle shortcuts")

@@ -6,6 +6,7 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 from reboot_prompt import prompt_reboot
+from widgets.button import BouncingButton
 
 
 class SuperCurtainsView(ctk.CTkFrame):
@@ -49,7 +50,7 @@ class SuperCurtainsView(ctk.CTkFrame):
         frame_buttons = ctk.CTkFrame(self.scrollable_frame)
         frame_buttons.pack(pady=10)
 
-        btn_save = ctk.CTkButton(frame_buttons, text="Save", command=self.save_curtain_values_with_prompt)
+        btn_save = BouncingButton(frame_buttons, text="Save", command=self.save_curtain_values_with_prompt)
         btn_save.grid(row=0, column=0, padx=10)
 
     def setup_image(self):

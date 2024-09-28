@@ -18,7 +18,7 @@ from configuration_manager import ScreenInfo
 from tray_icons import tray_manager
 from taskbar.taskbars import TaskbarView
 from ctypes import windll
-    
+from widgets.button import BouncingButton
 
 def is_admin():
     """Check if the current script is run as an administrator."""
@@ -86,7 +86,7 @@ class MainApp(ctk.CTk):
 
         self.main_button_objects = []
         for text, command in self.main_buttons:
-            btn = ctk.CTkButton(self.container, text=text, command=command)
+            btn = BouncingButton(self.container, text=text, command=command)
             btn.pack(fill="x", padx=10, pady=5, ipady=5)
             self.main_button_objects.append(btn)
 
@@ -100,7 +100,7 @@ class MainApp(ctk.CTk):
 
         self.trackpad_button_objects = []
         for text, command in self.trackpad_buttons:
-            btn = ctk.CTkButton(self.container, text=text, command=command)
+            btn = BouncingButton(self.container, text=text, command=command)
             btn.pack(fill="x", padx=10, pady=5, ipady=5)
             self.trackpad_button_objects.append(btn)
             btn.pack_forget()  # Hide trackpad buttons initially
@@ -113,7 +113,7 @@ class MainApp(ctk.CTk):
         
         self.keyboard_button_objects = []
         for text, command in self.keyboard_buttons:
-            btn = ctk.CTkButton(self.container, text=text, command=command)
+            btn = BouncingButton(self.container, text=text, command=command)
             btn.pack(fill="x", padx=10, pady=5, ipady=5)
             self.keyboard_button_objects.append(btn)
             btn.pack_forget()  # Hide keyboard buttons initially
@@ -126,15 +126,15 @@ class MainApp(ctk.CTk):
             frame.pack_forget()
 
         # Back 버튼 생성 (초기에는 숨김, 백업이랑 세팅을 위해서 사용될 예정)
-        self.back_button = ctk.CTkButton(self.container, text="Back", command=self.show_main_menu)
+        self.back_button = BouncingButton(self.container, text="Back", command=self.show_main_menu)
         self.back_button.pack(fill="x", padx=10, pady=5, ipady=5)
         self.back_button.pack_forget()
         
-        self.back_to_trackpad_button = ctk.CTkButton(self.container, text="Back", command=self.show_trackpad_menu)
+        self.back_to_trackpad_button = BouncingButton(self.container, text="Back", command=self.show_trackpad_menu)
         self.back_to_trackpad_button.pack(fill="x", padx=10, pady=5, ipady=5)
         self.back_to_trackpad_button.pack_forget()
         
-        self.back_to_keyboard_button = ctk.CTkButton(self.container, text="Back", command=self.show_keyboard_menu)
+        self.back_to_keyboard_button = BouncingButton(self.container, text="Back", command=self.show_keyboard_menu)
         self.back_to_keyboard_button.pack(fill="x", padx=10, pady=5, ipady=5)
         self.back_to_keyboard_button.pack_forget()
 

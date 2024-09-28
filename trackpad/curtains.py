@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from reboot_prompt import prompt_reboot
 import os
+from widgets.button import BouncingButton
 
 class CurtainsView(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -48,11 +49,9 @@ class CurtainsView(ctk.CTkFrame):
         frame_buttons = ctk.CTkFrame(self.scrollable_frame)
         frame_buttons.pack(pady=10)
 
-        btn_save = ctk.CTkButton(frame_buttons, text="Save", command=self.save_curtain_values_with_prompt)
+        btn_save = BouncingButton(frame_buttons, text="Save", command=self.save_curtain_values_with_prompt)
         btn_save.grid(row=0, column=0, padx=10)
 
-        #btn_back = ctk.CTkButton(frame_buttons, text="Back", command=self.back_to_main_menu)
-        #btn_back.grid(row=0, column=1, padx=10)
 
     def setup_image(self):
         # 트랙패드 이미지 표시 설정

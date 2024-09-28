@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import messagebox
 from reboot_prompt import prompt_reboot
 import winreg
+from widgets.button import BouncingButton
 
 class KeyRemapView(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -73,7 +74,7 @@ class KeyRemapView(ctk.CTkFrame):
         self.key_to_dropdown.pack(pady=5)
 
         # Add button
-        ctk.CTkButton(self, text="Add Remapping", command=self.add_remapping).pack(pady=10)
+        BouncingButton(self, text="Add Remapping", command=self.add_remapping).pack(pady=10)
 
         # Scrollable frame to display remapped keys
         self.scrollable_frame = ctk.CTkScrollableFrame(self, width=400, height=200)
@@ -84,8 +85,8 @@ class KeyRemapView(ctk.CTkFrame):
         # Save and Reset buttons
         button_frame = ctk.CTkFrame(self)
         button_frame.pack(pady=10)
-        ctk.CTkButton(button_frame, text="Save Mappings", command=self.save_mappings).grid(row=0, column=0, padx=10)
-        ctk.CTkButton(button_frame, text="Reset", command=self.reset_mappings).grid(row=0, column=1, padx=10)
+        BouncingButton(button_frame, text="Save Mappings", command=self.save_mappings).grid(row=0, column=0, padx=10)
+        BouncingButton(button_frame, text="Reset", command=self.reset_mappings).grid(row=0, column=1, padx=10)
 
         # List to display the current remappings
         self.update_remapped_list()

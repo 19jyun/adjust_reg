@@ -10,6 +10,7 @@ from PIL import Image, ImageTk
 import numpy as np
 from configuration_manager import ScreenInfo
 import pywinstyles
+from widgets.button import BouncingButton
 
 
 class TaskbarView(ctk.CTkFrame):
@@ -75,7 +76,7 @@ class TaskbarView(ctk.CTkFrame):
         frame_buttons = ctk.CTkFrame(self.scrollable_frame)
         frame_buttons.pack(pady=10)
 
-        btn_save = ctk.CTkButton(frame_buttons, text="Save", command=self.save_taskbar_values_with_prompt)
+        btn_save = BouncingButton(frame_buttons, text="Save", command=self.save_taskbar_values_with_prompt)
         btn_save.pack(pady=5)
 
     def update_ui_from_values(self, values):
