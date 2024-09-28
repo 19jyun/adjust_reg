@@ -2,9 +2,11 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 from configuration_manager import ScreenInfo
+from widgets.animated_switch import AnimatedSwitch
 import keyboard
 import json
 import os
+import pywinstyles
 
 # Dictionary to store shortcut remappings
 shortcut_remappings = {}
@@ -50,6 +52,10 @@ class KeyShortcutsView(ctk.CTkFrame):
         }
 
     def setup_ui(self):
+        
+        self.animated_switch = AnimatedSwitch(self, width=80, height=30, bg_color="gray", fg_color="green", handle_color="white", command=self.toggle_shortcuts)
+        self.animated_switch.pack(pady=10)
+        
         ctk.CTkLabel(self, text="Select Key Combination to Remap:").pack(pady=5)
 
         # Create frames to hold up to 4 keys for 'from' and 'to' combinations
@@ -101,6 +107,9 @@ class KeyShortcutsView(ctk.CTkFrame):
         # Add delete buttons for "from" and "to"
         ctk.CTkButton(button_frame, text="Save Shortcuts", command=self.save_shortcuts).pack(side=tk.LEFT, padx=10)
         ctk.CTkButton(button_frame, text="Reset", command=self.reset_shortcuts).pack(side=tk.LEFT, padx=10)
+
+    def toggle_shortcuts(self):
+        print("Toggle shortcuts")
 
     def dropdown_selected(self, idx, key_type):
         # Show the next dropdown when an item is selected

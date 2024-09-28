@@ -14,7 +14,6 @@ from trackpad.rightclick import RightClickView
 from keyboards.key_mapping import KeyRemapView
 from keyboards.key_shortcuts import KeyShortcutsView
 from settings.settings import SettingsView
-from backup.backups import BackupView
 from configuration_manager import ScreenInfo
 from tray_icons import tray_manager
 from taskbar.taskbars import TaskbarView
@@ -76,16 +75,11 @@ class MainApp(ctk.CTk):
         self.container = ctk.CTkFrame(self)
         self.container.pack(fill="both", expand=True)
 
-        # Main Menu Frame
-        #self.menu_frame = ctk.CTkFrame(self.container)
-        #self.menu_frame.pack(fill="both", expand=True)
-
         # Main buttons: Trackpad, Keyboard, Backup, Settings
         self.main_buttons = [
             ("Trackpad", self.show_trackpad_menu),
             ("Keyboard", self.show_keyboard_menu),
             ("Taskbar", self.show_taskbar_view),
-            ("Backup", self.show_backup_view),
             ("Settings", self.show_settings_view),
             ("Quit", self.quit_app)
         ]
@@ -126,7 +120,7 @@ class MainApp(ctk.CTk):
 
         # Frames for Curtains, Super Curtains, Right Click Zone
         self.frames = {}
-        for F in (CurtainsView, SuperCurtainsView, RightClickView, BackupView, SettingsView, TaskbarView, KeyRemapView, KeyShortcutsView):
+        for F in (CurtainsView, SuperCurtainsView, RightClickView, SettingsView, TaskbarView, KeyRemapView, KeyShortcutsView):
             frame = F(self.container, self)
             self.frames[F] = frame
             frame.pack_forget()
@@ -215,11 +209,6 @@ class MainApp(ctk.CTk):
         self.hide_main_menu()
         self.back_button.pack(fill="x", padx=10, pady=5, ipady=5)
         self.show_frame(TaskbarView)
-
-    def show_backup_view(self):
-        self.hide_main_menu()
-        self.back_button.pack(fill="x", padx=10, pady=5, ipady=5)
-        self.show_frame(BackupView)
 
     def show_settings_view(self):
         self.hide_main_menu()

@@ -52,7 +52,7 @@ Behaviors such as editing the registry through regedit and MyWindows simultaneou
 
 If you lose track of the program, you can always right-click the tray icon for registry and bring it up to the surface.
 
-<img src="bring_to_surface.png" alt="Tray Icon" width="400"/>
+<img src="images/bring_to_surface.png" alt="Tray Icon" width="400"/>
 
 ---
 
@@ -76,7 +76,7 @@ This feature controls the area of the touchpad where a right-click can be initia
 #### 4. Notes (Trackpads)
 The touchpad image used is an example, and the actual measurements are determined by the slider and input values. 
 
-<img src="trackpad_example.png" alt="Touchpad Example" width="400"/>
+<img src="images/trackpad_example.png" alt="Touchpad Example" width="400"/>
 
 All registry edits can be manually modified or removed through: `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad`. Remember to reboot after making changes.
 
@@ -110,7 +110,7 @@ Future updates will include:
 #### 1. Display Battery Charge/Discharge Rate
 This feature displays the battery charge or discharge rate in the system tray. The icon changes color based on charging (green) or discharging (yellow). You can disable the feature via a right-click on the icon or in the settings menu.
 
-<img src="trayicon_example1.png" alt="Tray Icon Example" width="400"/>
+<img src="images/trayicon_example1.png" alt="Tray Icon Example" width="400"/>
 ___________________________________________________
 
 Features to add:
@@ -129,6 +129,7 @@ Keyboard
 - shortcuts - have to work on combinations and dynamic size for dropdown combobox (dynamic sizing for dropdown fixed)
 
 알트탭 고쳐야됨
+
 
 Battery discharge rate
 - Change polling rate - should be done in settings
