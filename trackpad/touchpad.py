@@ -203,6 +203,39 @@ class TouchpadView(SlidingFrame):
 
         self.canvas.draw()
 
+    def update_slider_from_entry(self, entry, slider, max_value):
+        """Update slider value based on entry input."""
+        try:
+            value = float(entry.get())
+            if value > max_value:
+                value = max_value
+            slider.set(value)
+            self.update_image()
+        except ValueError:
+            pass
+
+    def update_entry_from_slider(self, slider, entry):
+        """Update entry field based on slider position."""
+        value = slider.get()
+        entry.delete(0, "end")
+        entry.insert(0, f"{value:.2f}")
+        self.update_image()
+
+    def on_entry_complete(self, entry, slider, max_value):
+        """Handle completion of entry update."""
+        self.update_slider_from_entry(entry, slider, max_value)
+        self.format_entry(entry)
+
+    def format_entry(self, entry):
+        """Format entry to display two decimal places."""
+        try:
+            value = float(entry.get())
+            entry.delete(0, "end")
+            entry.insert(0, f"{value:.2f}")
+        except ValueError:
+            entry.delete(0, "end")
+            entry.insert(0, "0.00")
+
     def save_values_with_prompt(self):
         """Prompt the user to save the registry values."""
         response = tk.messagebox.askyesno("Save Registry", "Are you sure you want to save the new registry values?\n\n")
