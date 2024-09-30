@@ -91,6 +91,7 @@ class KeyRemapView(SlidingFrame):
         BouncingButton(button_frame, text="Save Mappings", command=self.save_mappings).grid(row=0, column=0, padx=10)
         BouncingButton(button_frame, text="Reset", command=self.reset_mappings).grid(row=0, column=1, padx=10)
 
+        BouncingButton(self, text="Back", command=self.pack_forget).pack(pady=10)
         # List to display the current remappings
         self.update_remapped_list()
 

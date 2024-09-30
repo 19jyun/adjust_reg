@@ -62,6 +62,8 @@ class SettingsView(SlidingFrame):
         self.display_discharge_rate_var = ctk.BooleanVar(value=self.settings.get("Display discharge rate", False))
         self.display_discharge_rate_checkbox = ctk.CTkCheckBox(self, text="Always display battery discharge rate", variable=self.display_discharge_rate_var, command=self.toggle_display_discharge_rate)
         self.display_discharge_rate_checkbox.pack(pady=10)
+        
+        BouncingButton(self, text="Back", command=self.pack_forget).pack(pady=10)
 
     def load_settings(self):
         """Load settings from settings.json"""

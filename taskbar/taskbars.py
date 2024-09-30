@@ -82,6 +82,9 @@ class TaskbarView(SlidingFrame):
 
         btn_save = BouncingButton(frame_buttons, text="Save", command=self.save_taskbar_values_with_prompt)
         btn_save.pack(pady=5)
+        
+        btn_back = BouncingButton(frame_buttons, text="Back", command=self.pack_forget)
+        btn_back.pack(pady=5)
 
     def update_ui_from_values(self, values):
         """Update the UI elements with the values from the registry."""

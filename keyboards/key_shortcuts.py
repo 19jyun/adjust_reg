@@ -112,6 +112,9 @@ class KeyShortcutsView(SlidingFrame):
         BouncingButton(button_frame, text="Save Shortcuts", command=self.save_shortcuts).pack(side=tk.LEFT, padx=10)
         BouncingButton(button_frame, text="Reset", command=self.reset_shortcuts).pack(side=tk.LEFT, padx=10)
 
+        BouncingButton(self, text="Back", command=self.pack_forget).pack(pady=10)
+
+
     def toggle_shortcuts(self):
         print("Toggle shortcuts")
 
