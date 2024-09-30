@@ -8,14 +8,17 @@ import json
 import os
 import pywinstyles
 from widgets.button import BouncingButton
+from widgets.sliding_frames import SlidingFrame
+from configuration_manager import ScreenInfo
 
 # Dictionary to store shortcut remappings
 shortcut_remappings = {}
 SHORTCUT_FILE = "shortcuts.json"
 
-class KeyShortcutsView(ctk.CTkFrame):
+class KeyShortcutsView(SlidingFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent)
+        self.screen_info = ScreenInfo()
+        super().__init__(parent, width=self.screen_info.window_width, height=self.screen_info.window_height)
         self.controller = controller
         self.available_keys = self.get_available_keys()
         self.shortcut_mappings = []  # To display in the UI

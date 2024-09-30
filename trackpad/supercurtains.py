@@ -7,11 +7,15 @@ import tkinter as tk
 from tkinter import messagebox
 from reboot_prompt import prompt_reboot
 from widgets.button import BouncingButton
+from widgets.sliding_frames import SlidingFrame
+from configuration_manager import ScreenInfo
 
 
-class SuperCurtainsView(ctk.CTkFrame):
+class SuperCurtainsView(SlidingFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent)
+        
+        self.screen_info = ScreenInfo()
+        super().__init__(parent, width=self.screen_info.window_width, height=self.screen_info.window_height)
         self.controller = controller
         
         # 스크롤 가능한 프레임을 생성

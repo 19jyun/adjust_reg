@@ -11,11 +11,15 @@ import numpy as np
 from configuration_manager import ScreenInfo
 import pywinstyles
 from widgets.button import BouncingButton
+from widgets.sliding_frames import SlidingFrame
+from configuration_manager import ScreenInfo
 
 
-class TaskbarView(ctk.CTkFrame):
+class TaskbarView(SlidingFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent)
+        
+        self.screen_info = ScreenInfo()
+        super().__init__(parent, width=self.screen_info.window_width, height=self.screen_info.window_height)
         self.controller = controller
         
         self.screen_info = ScreenInfo()

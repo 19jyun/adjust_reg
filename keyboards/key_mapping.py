@@ -4,10 +4,13 @@ from tkinter import messagebox
 from reboot_prompt import prompt_reboot
 import winreg
 from widgets.button import BouncingButton
+from widgets.sliding_frames import SlidingFrame
+from configuration_manager import ScreenInfo
 
-class KeyRemapView(ctk.CTkFrame):
+class KeyRemapView(SlidingFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent)
+        self.screen_info = ScreenInfo()
+        super().__init__(parent, width=self.screen_info.window_width, height=self.screen_info.window_height)
         self.controller = controller
 
         self.available_keys = {
