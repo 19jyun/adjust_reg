@@ -8,13 +8,19 @@ import tkinter as tk
 from tkinter import messagebox
 from tray_icons import tray_manager
 from widgets.button import BouncingButton
+from widgets.sliding_frames import SlidingFrame
+from configuration_manager import ScreenInfo
 
 # settings.json 파일 경로
 SETTINGS_PATH = os.path.join(os.path.dirname(__file__), "settings.json")
-class SettingsView(ctk.CTkFrame):
+class SettingsView(SlidingFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent)
+        
+        self.screen_info = ScreenInfo()
+        
+        super().__init__(parent, width=self.screen_info.window_width, height=self.screen_info.window_height)
         self.controller = controller
+        
         
         # Load settings.json
         self.settings = self.load_settings()

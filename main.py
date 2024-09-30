@@ -213,7 +213,7 @@ class MainApp(ctk.CTk):
     def show_settings_view(self):
         self.hide_main_menu()
         self.back_button.pack(fill="x", padx=10, pady=5, ipady=5)
-        self.show_frame(SettingsView)
+        self.show_frame(SettingsView)        
 
     def show_key_mapping_view(self):
         self.hide_main_menu()
