@@ -7,7 +7,8 @@ class AnimatedSwitch(ctk.CTkFrame):
     def __init__(self, parent, width=80, height=30, bg_color="gray", fg_color="lime", handle_color="white", command=None):
         super().__init__(parent, fg_color=bg_color)
         
-        parent_bg_color = self.get_parent_bg_color(parent)
+        #parent_bg_color = self.get_parent_bg_color(parent)
+        parent_bg_color = self.collect_color_info(parent)
         
         self.width = width
         self.height = height
@@ -54,13 +55,66 @@ class AnimatedSwitch(ctk.CTkFrame):
 
     def get_parent_bg_color(self, parent):
         """Get the background color of the parent widget."""
-        # Get the parent's background color in RGB format
+        # Check if parent is a CustomTkinter widget and try to get its fg_color
         try:
-            bg = parent.cget("bg")  # Get parent background color
+            # For CustomTkinter widgets
+            bg = parent.cget("fg_color") if isinstance(parent, ctk.CTkBaseClass) else parent.cget("bg")
         except:
             bg = "#FFFFFF"  # Default to white if not available
 
         return bg
+
+    def collect_color_info(self, widget):
+        """
+        Collects the appropriate background color of a widget depending on its type and configuration.
+        Supports both tkinter and CustomTkinter widgets, including special handling for dual-mode colors.
+
+        Args:
+            widget: The widget whose background color needs to be retrieved.
+
+        Returns:
+            str: The background color in a format usable by tkinter components.
+        """
+        try:
+            # Check if the widget is a CustomTkinter widget
+            if isinstance(widget, ctk.CTkBaseClass):
+                # Retrieve the fg_color attribute; this could be a single color or a list of two colors
+                colors = widget.cget("fg_color")
+
+                # If colors is a single color (not a list), return it directly
+                if isinstance(colors, str):
+                    print("CustomTkinter single color:", colors)
+                    return colors
+
+                # If colors is a list (dual mode), handle based on appearance mode
+                elif isinstance(colors, list) and len(colors) == 2:
+                    appearance_mode = ctk.get_appearance_mode()  # Get the current mode
+                    # Handle unknown appearance mode gracefully
+                    if appearance_mode not in ["Light", "Dark"]:
+                        print(f"Unknown appearance mode: {appearance_mode}")
+                        return colors[0]  # Default to the first color in the list if mode is undefined
+                    # Return the appropriate color based on the mode
+                    print(f"CustomTkinter Appearance mode: {appearance_mode}")
+                    return colors[0] if appearance_mode == "Light" else colors[1]
+
+                # If colors format is unexpected, return a default color
+                else:
+                    print("CustomTkinter unexpected colors format:", colors)
+                    return "#FFFFFF"  # Fallback to white
+
+            # Check if the widget is a standard tkinter widget
+            elif isinstance(widget, (tk.Tk, tk.Frame, tk.Canvas, tk.Toplevel)):
+                print("Standard tkinter widget detected")
+                return widget.cget("bg")
+
+            # If the widget is neither, return a default color
+            else:
+                print("Unknown widget type")
+                return "#FFFFFF"  # Default to white
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            return "#FFFFFF"  # Fallback to white if anything goes wrong
+
 
     def create_pill_background(self, color):
         """Create a rounded pill-shaped image with a transparent background for the switch."""
@@ -171,7 +225,7 @@ if __name__ == "__main__":
         print("Switch toggled")
 
     root = tk.Tk()
-    root.configure(bg="white")
+    root.configure(bg="black")
     switch = AnimatedSwitch(root, command=on_toggle)
     switch.pack(pady=10)
     root.mainloop()
