@@ -70,6 +70,8 @@ class MainApp(ctk.CTk):
         # Main container
         self.container = ctk.CTkFrame(self)
         self.container.pack(fill="both", expand=True)
+        
+        self.frames = {}
 
         # Main menu buttons: Trackpad, Keyboard, Taskbar, Settings, Quit
         self.main_buttons = [
@@ -86,7 +88,19 @@ class MainApp(ctk.CTk):
             btn.pack(fill="x", padx=10, pady=5, ipady=5)
             self.main_button_objects.append(btn)
 
-        self.touchpad_button_frame = SlidingFrame(self.container, width=10000, height=10000)
+        self.after(100, self.create_sliding_frames)
+
+        tray_manager.start_main_tray_icon()
+        self.show_main_menu()
+
+    def create_sliding_frames(self):
+        """Create the sliding frames and initialize all view frames."""
+        print("Parent width:", self.container.winfo_width(), "Parent height:", self.container.winfo_height())
+        print("Window size: ", self.screen_info.window_width, self.screen_info.window_height)
+
+        # Create touchpad sliding frame
+        self.touchpad_button_frame = SlidingFrame(self.container, width=self.container.winfo_width(), height=self.container.winfo_height())
+
         # Trackpad submenu buttons: Curtains, Super Curtains, Right Click Zone, Back
         self.trackpad_buttons = [
             ("Curtains", lambda: self.show_frame((TouchpadView, "curtains"))),
@@ -94,39 +108,36 @@ class MainApp(ctk.CTk):
             ("Right Click Zone", lambda: self.show_frame((TouchpadView, "rightclick"))),
             ("Back", self.touchpad_button_frame.pack_forget)
         ]
-        
+
         for text, command in self.trackpad_buttons:
             btn = BouncingButton(self.touchpad_button_frame, text=text, command=command)
             btn.pack(fill="x", padx=10, pady=5, ipady=5)
 
-        # Frames for each view
-        self.frames = {}
-        for mode in ["curtains", "supercurtains", "rightclick"]:
-            frame = TouchpadView(self.container, self, mode=mode)
-            self.frames[(TouchpadView, mode)] = frame
-            frame.pack_forget()
+        # Register touchpad frames in the self.frames dictionary
+        self.frames[(TouchpadView, "curtains")] = TouchpadView(self.container, self, mode="curtains")
+        self.frames[(TouchpadView, "supercurtains")] = TouchpadView(self.container, self, mode="supercurtains")
+        self.frames[(TouchpadView, "rightclick")] = TouchpadView(self.container, self, mode="rightclick")
 
-        self.frames[KeyRemapView] = KeyRemapView(self.container, self)
-        self.frames[KeyShortcutsView] = KeyShortcutsView(self.container, self)
-        self.frames[SettingsView] = SettingsView(self.container, self)
-        self.frames[TaskbarView] = TaskbarView(self.container, self)
-
-        for frame in self.frames.values():
-            frame.pack_forget()
-
+        # Create keyboard sliding frame
         self.keyboard_button_frame = SlidingFrame(self.container, width=self.screen_info.window_width, height=self.screen_info.window_height)
         self.keyboard_buttons = [
             ("Key Mapping", lambda: self.show_frame(KeyRemapView)),
             ("Key Shortcuts", lambda: self.show_frame(KeyShortcutsView)),
             ("Back", self.keyboard_button_frame.pack_forget)
         ]
-        
+
         for text, command in self.keyboard_buttons:
             btn = BouncingButton(self.keyboard_button_frame, text=text, command=command)
             btn.pack(fill="x", padx=10, pady=5, ipady=5)
 
-        tray_manager.start_main_tray_icon()
-        self.show_main_menu()
+        # Register keyboard frames in the self.frames dictionary
+        self.frames[KeyRemapView] = KeyRemapView(self.container, self)
+        self.frames[KeyShortcutsView] = KeyShortcutsView(self.container, self)
+        
+        # Register other views
+        self.frames[SettingsView] = SettingsView(self.container, self)
+        self.frames[TaskbarView] = TaskbarView(self.container, self)
+
 
     def show_main_menu(self):
         """Show the main menu buttons."""

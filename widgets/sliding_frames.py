@@ -2,16 +2,17 @@ import customtkinter as ctk
 from configuration_manager import ScreenInfo
 
 class SlidingFrame(ctk.CTkFrame):
+    # Class-level attribute to track global animation state across all instances
+    animation_lock = False
+
     def __init__(self, parent, width=None, height=None, x=None, y=None, slide_out_x=None, slide_out_y=None, **kwargs):
         """Initialize the SlidingFrame with fixed dimensions."""
-        # Set initial dimensions, or default to zero if not provided
-        self.width = width if width is not None else parent.winfo_width()
-        self.height = height if height is not None else parent.winfo_height()
-
         self.screen_info = ScreenInfo()
+        self.width = width if width is not None else self.screen_info.window_width
+        self.height = height if height is not None else self.screen_info.window_height
 
-        # Initialize the frame with the provided dimensions
-        super().__init__(parent, width=self.width, height=self.height, **kwargs)
+        super().__init__(parent, **kwargs)
+        self.configure(width=self.width, height=self.height)
 
         self.parent = parent
         self.is_visible = False  # Track whether the frame is currently displayed
@@ -22,23 +23,20 @@ class SlidingFrame(ctk.CTkFrame):
         self.default_y = y
         self.slide_out_x = slide_out_x
         self.slide_out_y = slide_out_y
-        
-        self.update_idletasks()
-        self.width = self.winfo_width()
-        self.height = self.winfo_height()
 
     def slide_in(self):
         """Slide the frame in from the right with animation."""
-        if not self.is_visible and not self.animation_running:
+        if not self.is_visible and not self.animation_running and not SlidingFrame.animation_lock:
             self.animation_running = True
-            # Start off-screen on the right side of the parent
+            SlidingFrame.animation_lock = True  # Acquire the global animation lock
             self.place_for_sliding(x_offset=-self.parent.winfo_width()) 
             self._animate_slide(target_x=self._calculate_center_x(), direction="in")
 
     def slide_out(self, callback=None):
         """Slide the frame out to the right with animation."""
-        if self.is_visible and not self.animation_running:
+        if self.is_visible and not self.animation_running and not SlidingFrame.animation_lock:
             self.animation_running = True
+            SlidingFrame.animation_lock = True  # Acquire the global animation lock
             slide_out_x = self.slide_out_x if self.slide_out_x is not None else self.parent.winfo_width()
             self._animate_slide(target_x=slide_out_x, direction="out", callback=callback)
 
@@ -47,11 +45,11 @@ class SlidingFrame(ctk.CTkFrame):
         start_x = self.winfo_x()
         distance = target_x - start_x
         steps = 100  # Number of steps for the animation
-        delay = 15  # Delay between steps in milliseconds
+        delay = 5  # Delay between steps in milliseconds
 
         def ease_out_cubic(t):
             """Ease-out function for smooth deceleration."""
-            return 1 - (1 - t) ** 7
+            return 1 - (1 - t) ** 6
 
         def slide(step=0):
             if step <= steps:
@@ -68,12 +66,13 @@ class SlidingFrame(ctk.CTkFrame):
                 if direction == "in":
                     self.is_visible = True  # Mark frame as visible
                 self.animation_running = False  # Animation completed
+                SlidingFrame.animation_lock = False  # Release the global animation lock
                 if callback:
                     callback()
 
         slide()
 
-    # this place automatically centers the frame, despite the DPI
+    # Calculate x and y to center the frame despite DPI scaling
     def _calculate_center_x(self):
         """Calculate the x-coordinate to center the frame."""
         parent_width = self.parent.winfo_width()
