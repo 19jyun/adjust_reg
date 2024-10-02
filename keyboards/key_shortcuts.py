@@ -9,11 +9,11 @@ import os
 import pywinstyles
 from widgets.button import BouncingButton
 from widgets.sliding_frames import SlidingFrame
-from configuration_manager import ScreenInfo
 
 # Dictionary to store shortcut remappings
 shortcut_remappings = {}
 SHORTCUT_FILE = "shortcuts.json"
+SETTINGS_FILE = "settings/settings.json"
 
 class KeyShortcutsView(SlidingFrame):
     def __init__(self, parent, controller):
@@ -22,13 +22,11 @@ class KeyShortcutsView(SlidingFrame):
         self.controller = controller
         self.available_keys = self.get_available_keys()
         self.shortcut_mappings = []  # To display in the UI
-        self.screen_info = ScreenInfo()
 
         self.setup_ui()
         
-        # Load and apply shortcuts when the program starts
         self.load_shortcuts()
-
+        
     def get_available_keys(self):
         return {
             "A": "a", "B": "b", "C": "c", "D": "d",
@@ -56,10 +54,14 @@ class KeyShortcutsView(SlidingFrame):
         }
 
     def setup_ui(self):
+        self.switch_frame = ctk.CTkFrame(self)
+        self.switch_frame.pack(pady=10)
         
-        self.animated_switch = AnimatedSwitch(self, command = self.toggle_shortcuts)
-        self.animated_switch.pack(pady=10)
+        ctk.CTkLabel(self.switch_frame, text="Enable/Disable Key Remapping").pack(side=tk.LEFT, padx=10)
         
+        self.animated_switch = AnimatedSwitch(self.switch_frame, command=self.toggle_shortcuts)
+        self.animated_switch.pack(side=tk.LEFT, padx=10)
+
         ctk.CTkLabel(self, text="Select Key Combination to Remap:").pack(pady=5)
 
         # Create frames to hold up to 4 keys for 'from' and 'to' combinations
@@ -98,9 +100,14 @@ class KeyShortcutsView(SlidingFrame):
         upper_button_frame.pack(pady=10)
 
         # Add and display shortcuts
-        BouncingButton(upper_button_frame, text="Delete \u2191", command=self.delete_last_from_dropdown).pack(side=tk.LEFT, padx=5)
-        BouncingButton(upper_button_frame, text="Delete \u2193", command=self.delete_last_to_dropdown).pack(side=tk.LEFT, padx=5)
-        BouncingButton(upper_button_frame, text="Add Shortcut", command=self.add_shortcut).pack(pady=10)
+        self.delete_from_button = BouncingButton(upper_button_frame, text="Delete \u2191", command=self.delete_last_from_dropdown)
+        self.delete_from_button.pack(side=tk.LEFT, padx=5)
+        
+        self.delete_to_button = BouncingButton(upper_button_frame, text="Delete \u2193", command=self.delete_last_to_dropdown)
+        self.delete_to_button.pack(side=tk.LEFT, padx=5)
+        
+        self.add_button = BouncingButton(upper_button_frame, text="Add Shortcut", command=self.add_shortcut)
+        self.add_button.pack(pady=10)
 
         self.scrollable_frame = ctk.CTkScrollableFrame(self, width=self.screen_info.window_width*0.8, height=self.screen_info.window_height*0.3)
         self.scrollable_frame.pack(pady=10)
@@ -108,46 +115,67 @@ class KeyShortcutsView(SlidingFrame):
         button_frame = ctk.CTkFrame(self)
         button_frame.pack(pady=10)
 
-        # Add delete buttons for "from" and "to"
-        BouncingButton(button_frame, text="Save Shortcuts", command=self.save_shortcuts).pack(side=tk.LEFT, padx=10)
-        BouncingButton(button_frame, text="Reset", command=self.reset_shortcuts).pack(side=tk.LEFT, padx=10)
+        # Add save and reset buttons
+        self.save_button = BouncingButton(button_frame, text="Save Shortcuts", command=self.save_shortcuts)
+        self.save_button.pack(side=tk.LEFT, padx=10)
+        
+        self.reset_button = BouncingButton(button_frame, text="Reset", command=self.reset_shortcuts)
+        self.reset_button.pack(side=tk.LEFT, padx=10)
 
-        BouncingButton(self, text="Back", command=self.pack_forget).pack(pady=10)
-
+        self.back_button = BouncingButton(self, text="Back", command=self.pack_forget)
+        self.back_button.pack(pady=10)
 
     def toggle_shortcuts(self):
-        print("Toggle shortcuts")
+        """Enable or disable all elements except the 'Back' button based on switch state."""
+        state = "normal" if self.animated_switch.get() else "disabled"
+        for widget in self.from_key_frame.winfo_children() + self.to_key_frame.winfo_children():
+            widget.configure(state=state)
+            
+        for button in [self.add_button, self.delete_from_button, self.delete_to_button, self.save_button, self.reset_button]:
+            #button.configure(state=state)
+            pass
+        # temporarily unhook all hotkeys when disabled
+        if state == "disabled":
+            keyboard.unhook_all()
+        else:
+            self.apply_shortcuts()
+            
+        # Update the settings file with the new value of `enable_hotkey_remapping`
+        if os.path.exists(SETTINGS_FILE):
+            with open(SETTINGS_FILE, "r") as f:
+                settings_data = json.load(f)
+        else:
+            settings_data = {}  # Create an empty dictionary if file doesn't exist
+
+        settings_data["enable_hotkey_remapping"] = state == "normal"
+        with open(SETTINGS_FILE, "w") as f:
+            json.dump(settings_data, f, indent=4)
 
     def dropdown_selected(self, idx, key_type):
-        # Show the next dropdown when an item is selected
+        """Show the next dropdown when an item is selected."""
         if key_type == 'from' and idx < len(self.key_from_dropdowns) - 1:
-            self.key_from_dropdowns[idx + 1].pack(side=tk.LEFT, padx=5, pady=5)  # Use pack to show next dropdown
+            self.key_from_dropdowns[idx + 1].pack(side=tk.LEFT, padx=5, pady=5)
         elif key_type == 'to' and idx < len(self.key_to_dropdowns) - 1:
-            self.key_to_dropdowns[idx + 1].pack(side=tk.LEFT, padx=5, pady=5)  # Use pack to show next dropdown
+            self.key_to_dropdowns[idx + 1].pack(side=tk.LEFT, padx=5, pady=5)
 
-    # Function to delete last visible "from" dropdown
     def delete_last_from_dropdown(self):
+        """Delete last visible 'from' dropdown."""
         visible_from_dropdowns = [dropdown for dropdown in self.key_from_dropdowns if dropdown.winfo_ismapped()]
         if len(visible_from_dropdowns) > 1:
             idx = self.key_from_dropdowns.index(visible_from_dropdowns[-2])
-            self.key_from_vars[idx].set('')  # Clear the previous dropdown value
-            
-            # Hide the last visible dropdown
+            self.key_from_vars[idx].set('')
             visible_from_dropdowns[-1].pack_forget()
-            self.key_from_vars.pop()
 
-    # Function to delete last visible "to" dropdown
     def delete_last_to_dropdown(self):
+        """Delete last visible 'to' dropdown."""
         visible_to_dropdowns = [dropdown for dropdown in self.key_to_dropdowns if dropdown.winfo_ismapped()]
         if len(visible_to_dropdowns) > 1:
             idx = self.key_to_dropdowns.index(visible_to_dropdowns[-2])
-            self.key_to_vars[idx].set('')  # Clear the previous dropdown value
-            
-            # Hide the last visible dropdown
+            self.key_to_vars[idx].set('')
             visible_to_dropdowns[-1].pack_forget()
-            self.key_to_vars.pop()
 
     def add_shortcut(self):
+        """Add a new shortcut to the dictionary and update the UI."""
         keys_from = [var.get() for var in self.key_from_vars if var.get()]
         keys_to = [var.get() for var in self.key_to_vars if var.get()]
 
@@ -155,96 +183,80 @@ class KeyShortcutsView(SlidingFrame):
             messagebox.showwarning("Input Error", "Please select keys for both from and to combinations.")
             return
 
-        # Combine all the selected keys into a remapping
         shortcut = {
             'modifiers': keys_from[:-1],  # Modifiers for 'from'
             'key': keys_from[-1],  # Last key in 'from' combination
             'to_modifiers': keys_to[:-1],  # Modifiers for 'to'
             'to_key': keys_to[-1]  # Last key in 'to' combination
         }
-        # Create a unique key by using the full 'from' key combination
         from_combination = '+'.join(keys_from)
-
-        # Use the full combination as the key to avoid overwriting
         shortcut_remappings[from_combination] = shortcut
 
-        # Update UI
         remapping = f"{' + '.join(keys_from)} -> {' + '.join(keys_to)}"
         self.shortcut_mappings.append(remapping)
         self.update_shortcut_list()
 
     def update_shortcut_list(self):
-        # Clear the current list in the scrollable frame
+        """Update the list of shortcuts displayed in the scrollable frame."""
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
 
-        # Display each remapped key combination
         for remapping in self.shortcut_mappings:
             ctk.CTkLabel(self.scrollable_frame, text=remapping).pack(pady=5)
 
     def save_shortcuts(self):
-        """
-        Save current shortcut remappings to a JSON file and register the hotkeys.
-        """
-        # Unregister all hotkeys before applying new ones
-
+        """Save current shortcut remappings to a JSON file and register the hotkeys."""
         with open(SHORTCUT_FILE, "w") as f:
             json.dump(shortcut_remappings, f)
 
-        # Register all the shortcuts from the file
         self.apply_shortcuts()
-
         messagebox.showinfo("Success", "Shortcuts saved!")
 
     def apply_shortcuts(self):
-        """
-        Apply the shortcut remappings from the dictionary.
-        """
+        """Apply the shortcut remappings from the dictionary."""
         for key, shortcut in shortcut_remappings.items():
             self.register_hotkey(shortcut)
 
     def load_shortcuts(self):
-        """
-        Load shortcuts from a JSON file if it exists and apply them.
-        """
+        """Load shortcuts from a JSON file if it exists and apply them."""
+        
+        if os.path.exists(SETTINGS_FILE):
+            with open(SETTINGS_FILE, "r") as f:
+                settings_data = json.load(f)
+                if "enable_hotkey_remapping" in settings_data:
+                    self.animated_switch.set(settings_data["enable_hotkey_remapping"])
+                    self.toggle_shortcuts()
+        
         if os.path.exists(SHORTCUT_FILE):
             with open(SHORTCUT_FILE, "r") as f:
                 saved_shortcuts = json.load(f)
                 for key, mapping in saved_shortcuts.items():
-                    # Restore the shortcut_remappings dictionary
                     shortcut_remappings[key] = mapping
-                    # Update the UI display
                     from_keys = mapping['modifiers'] + [mapping['key']]
                     to_keys = mapping['to_modifiers'] + [mapping['to_key']]
                     remapping = f"{' + '.join(from_keys)} -> {' + '.join(to_keys)}"
                     self.shortcut_mappings.append(remapping)
                 self.update_shortcut_list()
-
-                # Register the shortcuts
-                self.apply_shortcuts()
+                
+                # apply the shortcuts if the switch is enabled
+                if self.animated_switch.get():
+                    self.apply_shortcuts()
+                else:
+                    keyboard.unhook_all()
 
     def reset_shortcuts(self):
-        """
-        Reset all the shortcuts by clearing the mappings.
-        """
+        """Reset all shortcuts by clearing the mappings."""
         self.shortcut_mappings = []
         shortcut_remappings.clear()
         self.update_shortcut_list()
         messagebox.showinfo("Reset", "All shortcuts have been reset.")
-        
-        # Clear the file content and unregister all hotkeys
         if os.path.exists(SHORTCUT_FILE):
             with open(SHORTCUT_FILE, "w") as f:
                 json.dump({}, f)
-                
         keyboard.unhook_all()
 
     def register_hotkey(self, shortcut):
-        """
-        Register a hotkey using the keyboard library.
-        Maps the 'from' key combination to the 'to' key combination.
-        """
+        """Register a hotkey using the keyboard library."""
         from_combination = '+'.join(shortcut['modifiers'] + [shortcut['key']])
         to_combination = '+'.join(shortcut['to_modifiers'] + [shortcut['to_key']])
-
         keyboard.remap_hotkey(from_combination, to_combination, suppress=True)

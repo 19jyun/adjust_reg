@@ -54,28 +54,48 @@ class TaskbarView(SlidingFrame):
         
         self.setup_ui()
         
-        #이거 지금은 괜찮은데 나중에는 무조건 update image 기능 작동하도록 해야됨, 그래야 저장된 값들이 반영됨 (현재도 슬라이더 같은거엔 반영되는데 사진이 반영 X)
-        #self.after(200, self.update_image)
+        self.update_image()
             
+    def get_dropdown_key(self, mapping, value):
+        """Retrieve the key (label) for a given value in a dictionary."""
+        for k, v in mapping.items():
+            if v == value:
+                return k
+        return list(mapping.keys())[0]  # Return first key as fallback if no match
+
     def setup_ui(self):
-        
         self.setup_image()
         # Create taskbar length slider and entry
         self.create_slider("Taskbar Length", self.max_taskbar_size, "entry_taskbar_length", "slider_taskbar_length", self.current_values["TaskbarLength"])
-        
+
         # Create taskbar transparency slider and entry
         self.create_slider("Taskbar Transparency", self.max_taskbar_transparency, "entry_taskbar_transparency", "slider_taskbar_transparency", self.current_values["TaskbarTransparency"])
 
         # Create dropdowns for taskbar position and auto-hide
         # Create taskbar position dropdown
-        self.create_dropdown("Taskbar Position", self.taskbar_positions, "position_var", "position_dropdown", "position_dropdown", self.current_values["Position"])
-        self.create_dropdown("Auto-Hide Taskbar", self.auto_hide_options, "auto_hide_var", "auto_hide_dropdown", "auto_hide_dropdown", self.current_values["AutoHide"])
-        self.create_dropdown("Taskbar Icon Size", self.icon_size_options, "icon_size_var", "icon_size_dropdown", "icon_size_dropdown", self.current_values["TaskbarSmallIcons"])
-        self.create_dropdown("Taskbar Alignment", self.alignment_options, "alignment_var", "alignment_dropdown", "alignment_dropdown", self.current_values["TaskbarAlignment"])
-        self.create_dropdown("Taskbar Clock", self.clock_visibility_options, "clock_var", "clock_dropdown", "clock_dropdown", self.current_values["ShowClock"])
-        self.create_dropdown("Taskbar Labels", self.label_visibility_options, "label_var", "label_dropdown", "label_dropdown", self.current_values["TaskbarGlomLevel"])
-        self.create_dropdown("Thumbnail Preview Size (px)", self.thumbnail_size_options, "thumbnail_var", "thumbnail_dropdown", "thumbnail_dropdown", self.current_values["MinThumbSizePx"])
+        self.create_dropdown(
+            "Taskbar Position", 
+            self.taskbar_positions, 
+            "position_var", 
+            "position_dropdown", 
+            "position_dropdown", 
+            self.get_dropdown_key(self.taskbar_positions, self.current_values["Position"])
+        )
 
+        self.create_dropdown(
+            "Auto-Hide Taskbar", 
+            self.auto_hide_options, 
+            "auto_hide_var", 
+            "auto_hide_dropdown", 
+            "auto_hide_dropdown", 
+            self.get_dropdown_key(self.auto_hide_options, self.current_values["AutoHide"])
+        )
+
+        self.create_dropdown("Taskbar Icon Size", self.icon_size_options, "icon_size_var", "icon_size_dropdown", "icon_size_dropdown", self.get_dropdown_key(self.icon_size_options, self.current_values["TaskbarSmallIcons"]))
+        self.create_dropdown("Taskbar Alignment", self.alignment_options, "alignment_var", "alignment_dropdown", "alignment_dropdown", self.get_dropdown_key(self.alignment_options, self.current_values["TaskbarAlignment"]))
+        self.create_dropdown("Taskbar Clock", self.clock_visibility_options, "clock_var", "clock_dropdown", "clock_dropdown", self.get_dropdown_key(self.clock_visibility_options, self.current_values["ShowClock"]))
+        self.create_dropdown("Taskbar Labels", self.label_visibility_options, "label_var", "label_dropdown", "label_dropdown", self.get_dropdown_key(self.label_visibility_options, self.current_values["TaskbarGlomLevel"]))
+        self.create_dropdown("Thumbnail Preview Size (px)", self.thumbnail_size_options, "thumbnail_var", "thumbnail_dropdown", "thumbnail_dropdown", str(self.current_values["MinThumbSizePx"]))
 
         # Save button
         frame_buttons = ctk.CTkFrame(self.scrollable_frame)
