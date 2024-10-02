@@ -49,31 +49,32 @@ class TaskbarView(SlidingFrame):
         self.label_visibility_options = {"Always Combine, Hide Labels": 0, "Combine Only When Taskbar Is Full": 1, "Never Combine": 2}
         self.thumbnail_size_options = [str(i) for i in range(100, 301, 50)]  # From 100px to 300px in steps of 50px
 
-        # Setup UI
+        # Setup UI        
+        self.current_values = self.get_current_taskbar_values()
+        
         self.setup_ui()
         
-        current_values = self.get_current_taskbar_values()
-        
-        self.update_ui_from_values(current_values)
-
+        #이거 지금은 괜찮은데 나중에는 무조건 update image 기능 작동하도록 해야됨, 그래야 저장된 값들이 반영됨 (현재도 슬라이더 같은거엔 반영되는데 사진이 반영 X)
+        #self.after(200, self.update_image)
+            
     def setup_ui(self):
         
         self.setup_image()
         # Create taskbar length slider and entry
-        self.create_slider("Taskbar Length", self.max_taskbar_size, "entry_taskbar_length", "slider_taskbar_length")
+        self.create_slider("Taskbar Length", self.max_taskbar_size, "entry_taskbar_length", "slider_taskbar_length", self.current_values["TaskbarLength"])
         
         # Create taskbar transparency slider and entry
-        self.create_slider("Taskbar Transparency", self.max_taskbar_transparency, "entry_taskbar_transparency", "slider_taskbar_transparency")
+        self.create_slider("Taskbar Transparency", self.max_taskbar_transparency, "entry_taskbar_transparency", "slider_taskbar_transparency", self.current_values["TaskbarTransparency"])
 
         # Create dropdowns for taskbar position and auto-hide
         # Create taskbar position dropdown
-        self.create_dropdown("Taskbar Position", self.taskbar_positions, "position_var", "position_dropdown", "position_dropdown")
-        self.create_dropdown("Auto-Hide Taskbar", self.auto_hide_options, "auto_hide_var", "auto_hide_dropdown", "auto_hide_dropdown")
-        self.create_dropdown("Taskbar Icon Size", self.icon_size_options, "icon_size_var", "icon_size_dropdown", "icon_size_dropdown")
-        self.create_dropdown("Taskbar Alignment", self.alignment_options, "alignment_var", "alignment_dropdown", "alignment_dropdown")
-        self.create_dropdown("Taskbar Clock", self.clock_visibility_options, "clock_var", "clock_dropdown", "clock_dropdown")
-        self.create_dropdown("Taskbar Labels", self.label_visibility_options, "label_var", "label_dropdown", "label_dropdown")
-        self.create_dropdown("Thumbnail Preview Size (px)", self.thumbnail_size_options, "thumbnail_var", "thumbnail_dropdown", "thumbnail_dropdown")
+        self.create_dropdown("Taskbar Position", self.taskbar_positions, "position_var", "position_dropdown", "position_dropdown", self.current_values["Position"])
+        self.create_dropdown("Auto-Hide Taskbar", self.auto_hide_options, "auto_hide_var", "auto_hide_dropdown", "auto_hide_dropdown", self.current_values["AutoHide"])
+        self.create_dropdown("Taskbar Icon Size", self.icon_size_options, "icon_size_var", "icon_size_dropdown", "icon_size_dropdown", self.current_values["TaskbarSmallIcons"])
+        self.create_dropdown("Taskbar Alignment", self.alignment_options, "alignment_var", "alignment_dropdown", "alignment_dropdown", self.current_values["TaskbarAlignment"])
+        self.create_dropdown("Taskbar Clock", self.clock_visibility_options, "clock_var", "clock_dropdown", "clock_dropdown", self.current_values["ShowClock"])
+        self.create_dropdown("Taskbar Labels", self.label_visibility_options, "label_var", "label_dropdown", "label_dropdown", self.current_values["TaskbarGlomLevel"])
+        self.create_dropdown("Thumbnail Preview Size (px)", self.thumbnail_size_options, "thumbnail_var", "thumbnail_dropdown", "thumbnail_dropdown", self.current_values["MinThumbSizePx"])
 
 
         # Save button
@@ -85,35 +86,8 @@ class TaskbarView(SlidingFrame):
         
         btn_back = BouncingButton(frame_buttons, text="Back", command=self.pack_forget)
         btn_back.pack(pady=5)
-
-    def update_ui_from_values(self, values):
-        """Update the UI elements with the values from the registry."""
-        # Update taskbar length slider
-        self.slider_taskbar_length.set(values.get("TaskbarLength", self.max_taskbar_size))
-        self.entry_taskbar_length.delete(0, "end")
-        self.entry_taskbar_length.insert(0, f"{values.get('TaskbarLength', self.max_taskbar_size):.2f}")
-
-        # Update taskbar transparency slider
-        self.slider_taskbar_transparency.set(values.get("TaskbarTransparency", self.max_taskbar_transparency))
-        self.entry_taskbar_transparency.delete(0, "end")
-        self.entry_taskbar_transparency.insert(0, f"{values.get('TaskbarTransparency', self.max_taskbar_transparency):.2f}")
-
-        # Update dropdowns
-        self.position_var.set("Top" if values.get("Position") == 0x01 else "Bottom")
-        self.auto_hide_var.set("Enabled" if values.get("AutoHide") == 0x02 else "Disabled")
-        self.icon_size_var.set("Small" if values.get("TaskbarSmallIcons") == 1 else "Large")
-        self.alignment_var.set("Left" if values.get("TaskbarAlignment") == 0 else "Center")  # Windows 11 alignment
-        self.clock_var.set("Hide" if values.get("ShowClock") == 0 else "Show")
-
-        # Handle Taskbar Label Visibility
-        label_visibility_mapping = {0: "Always Combine, Hide Labels", 1: "Combine Only When Taskbar Is Full", 2: "Never Combine"}
-        taskbar_glom_level = values.get("TaskbarGlomLevel", 0)
-        self.label_var.set(label_visibility_mapping.get(taskbar_glom_level, "Always Combine, Hide Labels"))
-
-        # Handle Thumbnail Preview Size
-        self.thumbnail_var.set(str(values.get("MinThumbSizePx", 100)))  # Thumbnail preview size
-
-    def setup_image(self):
+        
+    def setup_image(self, current_width=None, current_transparency=None, label_position=None):
         """Load and display the background and taskbar images with CTkImage."""
 
         # Calculate dimensions for the background image dynamically
@@ -141,85 +115,100 @@ class TaskbarView(SlidingFrame):
         self.label_background_img.pack()
         
         # Create and place taskbar image label
-        self.xa = (image_width - taskbar_width) // 2 - 10 # Center the taskbar image
+        self.xa = (image_width - taskbar_width) // 2 # Center the taskbar image
         self.label_taskbar_img = ctk.CTkLabel(self.scrollable_frame, image=self.taskbar_image_ctk, text="", width=taskbar_width, height=taskbar_height, fg_color="transparent")
         self.label_taskbar_img.place(x = self.xa, y=background_image_height - taskbar_height)  # Adjust position to overlay at bottom of the background image
 
         self.label_height_position = background_image_height - taskbar_height
-
+        
     def update_image(self, source=None):
         """Updates the taskbar overlay on the background based on the user inputs for position, length, and transparency."""
 
-        if source:
-            # Initialize variables to store current states if they don't exist
-            if not hasattr(self, 'current_width'):
-                self.current_width = self.taskbar_image_resized.width
-            if not hasattr(self, 'current_height'):
-                self.current_height = self.taskbar_image_resized.height
-            if not hasattr(self, 'current_transparency'):
-                self.current_transparency = 255  # Default transparency value (fully opaque)
-            if not hasattr(self, 'label_position'):
-                self.label_position = self.background_image_resized.height - self.current_height  # Default to bottom position
+        # Initialize variables to store current states if they don't exist
+        if not hasattr(self, 'current_width'):
+            self.current_width = self.taskbar_image_resized.width
+        if not hasattr(self, 'current_height'):
+            self.current_height = self.taskbar_image_resized.height
+        if not hasattr(self, 'current_transparency'):
+            self.current_transparency = 255  # Default transparency value (fully opaque)
+        if not hasattr(self, 'label_position'):
+            self.label_position = self.background_image_resized.height - self.current_height  # Default to bottom position
 
+        if source:
             # Only update the relevant value based on the source
             if source == "slider_taskbar_length" or source == "entry_taskbar_length":
                 # Calculate new taskbar width based on the slider value
                 self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.slider_taskbar_length.get())
+                print("update called from length")
 
             elif source == "slider_taskbar_transparency" or source == "entry_taskbar_transparency":
                 # Calculate and store the transparency value
                 self.current_transparency = int(255 * (self.slider_taskbar_transparency.get() / self.max_taskbar_transparency))  # Alpha value (0-255)
+                print("update called from transparency")
+                print("current transparency:", self.current_transparency)
 
             elif source == "position_dropdown":
-                # Set the taskbar position based on dropdown selection
-                if self.position_var.get() == "Top":
-                    self.label_position = 0  # Move to top of the background image
-                else:  # Default to bottom position
-                    self.label_position = self.background_image_resized.height - self.current_height
+                self.label_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.current_height
+                print("update called from position")
+                
+        else: # Update all values if no source is provided
+            self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.slider_taskbar_length.get())
+            self.current_transparency = int(255 * (self.slider_taskbar_transparency.get() / self.max_taskbar_transparency))  # Alpha value (0-255)
+            self.label_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.current_height
+            print("update called from else")
+            print("current width", self.current_width)
+            print("current transparency", self.current_transparency)
+            print("label position", self.label_position)
+            
+        # Apply the updates to the image and label at the end
+        # 1. Resize the taskbar image based on the current width and height
+        self.taskbar_image_resized = self.taskbar_image.resize((self.current_width, self.current_height), Image.Resampling.LANCZOS)
 
-            # Apply the updates to the image and label at the end
-            # 1. Resize the taskbar image based on the current width and height
-            self.taskbar_image_resized = self.taskbar_image.resize((self.current_width, self.current_height), Image.Resampling.LANCZOS)
+        # 2. Apply the current transparency to the taskbar image
+        taskbar_rgba = self.taskbar_image_resized.convert("RGBA")
+        data = np.array(taskbar_rgba)
+        self.taskbar_image_resized = Image.fromarray(data)
 
-            # 2. Apply the current transparency to the taskbar image
-            taskbar_rgba = self.taskbar_image_resized.convert("RGBA")
-            data = np.array(taskbar_rgba)
-            #data[:, :, 3] = self.current_transparency  # Modify the alpha channel
-            self.taskbar_image_resized = Image.fromarray(data)
+        # 3. Convert to a CTkImage and update the label image
+        self.taskbar_image_ctk = ctk.CTkImage(self.taskbar_image_resized, size=(self.current_width, self.current_height))
+        self.label_taskbar_img.configure(image=self.taskbar_image_ctk, width=self.current_width, height=self.current_height, fg_color="transparent")
 
-            # 3. Convert to a CTkImage and update the label image
-            self.taskbar_image_ctk = ctk.CTkImage(self.taskbar_image_resized, size=(self.current_width, self.current_height))
-            self.label_taskbar_img.configure(image=self.taskbar_image_ctk, width=self.current_width, height=self.current_height, fg_color="transparent")
+        # 4. Position the label based on the updated x and y values
+        self.xa = (self.screen_info.window_width - self.current_width) // 2
+        self.label_taskbar_img.place(x=self.xa, y=self.label_position)
 
-            # 4. Position the label based on the updated x and y values
-            self.xa = (self.screen_info.window_width - self.current_width) // 2 - 10
-            self.label_taskbar_img.place(x=self.xa, y=self.label_position)
-
-            # Should probably update the code so that there are less burdon on the cpu
-            # Update required so that the taskbar transparency is shown
-
-            pywinstyles.set_opacity(self.label_taskbar_img.winfo_id(), self.current_transparency)
-
-    def create_slider(self, label_text, max_value, entry_name, slider_name):
+        pywinstyles.set_opacity(self.label_taskbar_img.winfo_id(), self.current_transparency)
+            
+    def create_slider(self, label_text, max_value, entry_name, slider_name, initial_value=None):
         """Create a slider and an entry that are synchronized."""
         label = ctk.CTkLabel(self.scrollable_frame, text=label_text)
         label.pack(pady=5)
 
-        # Create the slider
-        slider = ctk.CTkSlider(self.scrollable_frame, from_=0, to=max_value, command=lambda value: [self.update_entry_from_slider(slider, getattr(self, entry_name)), self.update_image(slider_name)])
+        # 슬라이더 생성 시 일시적으로 command를 설정하지 않음, value가 0 이하로 내려가면 버그 발생해서 1로 수정
+        slider = ctk.CTkSlider(self.scrollable_frame, from_=1, to=max_value, command=None)
         slider.pack(pady=5)
-        slider.set(max_value) # Default value should be set to the CURRENT VALUE - To be updated
+
+        # 슬라이더 값 설정 중 이벤트가 발생하지 않도록 command 연결을 비활성화한 상태에서 설정
+        # 아예 initial value 값을 받아서 생성시 값을 지정해주도록 변경
+        if label_text == "Taskbar Transparency":
+            slider.set(initial_value if initial_value else 1)  # Default value should be set to 0 so that the taskbar is visible
+        else:
+            slider.set(initial_value if initial_value else max_value)  # Default value should be set to the CURRENT VALUE
+
         setattr(self, slider_name, slider)
 
-        # Create the entry
+        # 엔트리 위젯 생성 및 초기 값 설정 중 이벤트 비활성화
         entry = ctk.CTkEntry(self.scrollable_frame, justify='center')
-        entry.insert(0, f"{max_value:.2f}")
+        entry.insert(0, initial_value if initial_value else f"{max_value:.2f}")
         entry.pack(pady=5)
-        entry.bind("<FocusOut>", lambda event: [self.on_entry_complete(entry, slider, max_value), self.update_image(entry_name)])
-        entry.bind("<Return>", lambda event: [self.on_entry_complete(entry, slider, max_value), self.update_image(entry_name)])
         setattr(self, entry_name, entry)
 
-    def create_dropdown(self, label_text, values, var_name, dropdown_name, source):
+        # 슬라이더와 엔트리의 초기 값 설정이 끝난 후에 command 및 이벤트 연결
+        slider.configure(command=lambda value: [self.update_entry_from_slider(slider, getattr(self, entry_name)), self.update_image(slider_name)])
+        entry.bind("<FocusOut>", lambda event: [self.on_entry_complete(entry, slider, max_value), self.update_image(entry_name)])
+        entry.bind("<Return>", lambda event: [self.on_entry_complete(entry, slider, max_value), self.update_image(entry_name)])
+
+    def create_dropdown(self, label_text, values, var_name, dropdown_name, source, initial_value=None):
         """Create a dropdown menu with the specified values."""
         label = ctk.CTkLabel(self.scrollable_frame, text=label_text)
         label.pack(pady=5)
@@ -238,6 +227,7 @@ class TaskbarView(SlidingFrame):
         dropdown.set(value_list[0])  # Set default value
         setattr(self, var_name, var)
         setattr(self, dropdown_name, dropdown)
+        dropdown.set(initial_value if initial_value else value_list[0])  # Set initial value if provided
 
         # Trigger update_image when the dropdown value changes
         var.trace_add('write', lambda *args: self.update_image(source))
@@ -357,7 +347,8 @@ class TaskbarView(SlidingFrame):
             "ShowClock": None,
             "TaskbarGlomLevel": None,
             "MinThumbSizePx": None,
-            "TaskbarTransparency": 100.0
+            "TaskbarTransparency": 1,
+            "TaskbarLength": 100
         }
 
         try:

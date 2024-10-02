@@ -77,13 +77,13 @@ class SlidingFrame(ctk.CTkFrame):
         """Calculate the x-coordinate to center the frame."""
         parent_width = self.parent.winfo_width()
         frame_width = self.winfo_width()
-        return (parent_width - frame_width) // 2
+        return int(((parent_width - frame_width) // 2) / self.screen_info.dpi)
 
     def _calculate_center_y(self):
         """Calculate the y-coordinate to center the frame vertically."""
         parent_height = self.parent.winfo_height()
         frame_height = self.winfo_height()
-        return (parent_height - frame_height) // 2
+        return int(((parent_height - frame_height) // 2) / self.screen_info.dpi)
 
     def place_for_sliding(self, x_offset=0):
         """Custom place method to start off-screen for sliding animation."""

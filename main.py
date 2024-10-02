@@ -138,7 +138,6 @@ class MainApp(ctk.CTk):
         self.frames[SettingsView] = SettingsView(self.container, self)
         self.frames[TaskbarView] = TaskbarView(self.container, self)
 
-
     def show_main_menu(self):
         """Show the main menu buttons."""
         self.hide_all_frames()
@@ -155,17 +154,6 @@ class MainApp(ctk.CTk):
         self.keyboard_button_frame.pack()
 
     def show_frame(self, frame_key):
-        """
-        Consolidated method to show any frame.
-        Hides all frames and submenus, then displays the specified frame.
-        
-        Args:
-            frame_key: A key representing the frame to show. This can be a class (e.g., SettingsView)
-                       or a tuple for TouchpadView with a specific mode (e.g., (TouchpadView, "curtains")).
-        """
-        #self.hide_all_frames()
-        #self.hide_submenus()
-
         # Show the corresponding frame
         frame = self.frames[frame_key]
         frame.pack()

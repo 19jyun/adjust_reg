@@ -126,10 +126,17 @@ class TouchpadView(SlidingFrame):
         if self.mode == "rightclick":
             self.slider_width.set(values.get('RightClickZoneWidth', 0) / 1000)
             self.slider_height.set(values.get('RightClickZoneHeight', 0) / 1000)
+            
+            self.update_entry_from_slider(self.slider_width, self.entry_width)
+            self.update_entry_from_slider(self.slider_height, self.entry_height)
         else:
             self.slider_top.set(values.get(self.curtain_keys[0], 0) / 1000)
             self.slider_left.set(values.get(self.curtain_keys[1], 0) / 1000)
             self.slider_right.set(values.get(self.curtain_keys[2], 0) / 1000)
+            
+            self.update_entry_from_slider(self.slider_top, self.entry_top)
+            self.update_entry_from_slider(self.slider_left, self.entry_left)
+            self.update_entry_from_slider(self.slider_right, self.entry_right)
 
         self.update_image()
 
