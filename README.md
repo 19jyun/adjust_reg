@@ -167,8 +167,6 @@ minimize instead of quit could replace this option maybe (check on resource usag
 **Update Image doesn't produce expected results**
 - taskbar 자꾸 투명하게 나옴, 클릭하면 바로 고쳐짐
 
-**새로운 창이 열리면, 다른 창들의 버튼들 클릭 안되게 막기**
-
 **키보드 shortcut 활성화 비활성화**
 -이건 구현 완료했음 (switch on 인 상태로 시작되면 색상이 이상해지는 버그 존재)
 

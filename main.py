@@ -70,15 +70,24 @@ class MainApp(ctk.CTk):
         # Main container
         self.container = ctk.CTkFrame(self)
         self.container.pack(fill="both", expand=True)
+
+        self.frame_stack = [self.container]
         
         self.frames = {}
 
+        self.touchpad_button_frame = SlidingFrame(self.container, width=self.container.winfo_width(), height=self.container.winfo_height())
+        self.keyboard_button_frame = SlidingFrame(self.container, width=self.screen_info.window_width, height=self.screen_info.window_height)
+
+        # Register the touchpad and keyboard frames in self.frames using unique keys
+        self.frames["TouchpadFrame"] = self.touchpad_button_frame
+        self.frames["KeyboardFrame"] = self.keyboard_button_frame
+
         # Main menu buttons: Trackpad, Keyboard, Taskbar, Settings, Quit
         self.main_buttons = [
-            ("Trackpad", self.show_trackpad_menu),
-            ("Keyboard", self.show_keyboard_menu),
-            ("Taskbar", lambda: self.show_frame(TaskbarView)),
-            ("Settings", lambda: self.show_frame(SettingsView)),
+            ("Trackpad", self.wrap_command(lambda: self.show_frame("TouchpadFrame"))),
+            ("Keyboard", self.wrap_command(lambda: self.show_frame("KeyboardFrame"))),
+            ("Taskbar", self.wrap_command(lambda: self.show_frame("Taskbar"))),
+            ("Settings", self.wrap_command(lambda: self.show_frame("Settings"))),
             ("Quit", self.quit_app)
         ]
 
@@ -94,49 +103,42 @@ class MainApp(ctk.CTk):
         self.show_main_menu()
 
     def create_sliding_frames(self):
-        """Create the sliding frames and initialize all view frames."""
-        print("Parent width:", self.container.winfo_width(), "Parent height:", self.container.winfo_height())
-        print("Window size: ", self.screen_info.window_width, self.screen_info.window_height)
-
-        # Create touchpad sliding frame
-        self.touchpad_button_frame = SlidingFrame(self.container, width=self.container.winfo_width(), height=self.container.winfo_height())
-
-        # Trackpad submenu buttons: Curtains, Super Curtains, Right Click Zone, Back
+        """Create the sliding frames and register frames using consistent string keys."""
+        # Create Trackpad sliding frame
         self.trackpad_buttons = [
-            ("Curtains", lambda: self.show_frame((TouchpadView, "curtains"))),
-            ("Super Curtains", lambda: self.show_frame((TouchpadView, "supercurtains"))),
-            ("Right Click Zone", lambda: self.show_frame((TouchpadView, "rightclick"))),
-            ("Back", self.touchpad_button_frame.pack_forget)
+            ("Curtains", self.wrap_command(lambda: self.show_frame("TrackpadCurtains"))),
+            ("Super Curtains", self.wrap_command(lambda: self.show_frame("TrackpadSuperCurtains"))),
+            ("Right Click Zone", self.wrap_command(lambda: self.show_frame("TrackpadRightClick"))),
+            ("Back", self.wrap_command(lambda: self.go_back()))
         ]
 
         for text, command in self.trackpad_buttons:
             btn = BouncingButton(self.touchpad_button_frame, text=text, command=command)
             btn.pack(fill="x", padx=10, pady=5, ipady=5)
 
-        # Register touchpad frames in the self.frames dictionary
-        self.frames[(TouchpadView, "curtains")] = TouchpadView(self.container, self, mode="curtains")
-        self.frames[(TouchpadView, "supercurtains")] = TouchpadView(self.container, self, mode="supercurtains")
-        self.frames[(TouchpadView, "rightclick")] = TouchpadView(self.container, self, mode="rightclick")
+        # Register Trackpad views using string keys
+        self.frames["TrackpadCurtains"] = TouchpadView(self.container, self, mode="curtains")
+        self.frames["TrackpadSuperCurtains"] = TouchpadView(self.container, self, mode="supercurtains")
+        self.frames["TrackpadRightClick"] = TouchpadView(self.container, self, mode="rightclick")
 
-        # Create keyboard sliding frame
-        self.keyboard_button_frame = SlidingFrame(self.container, width=self.screen_info.window_width, height=self.screen_info.window_height)
+        # Create Keyboard sliding frame
         self.keyboard_buttons = [
-            ("Key Mapping", lambda: self.show_frame(KeyRemapView)),
-            ("Key Shortcuts", lambda: self.show_frame(KeyShortcutsView)),
-            ("Back", self.keyboard_button_frame.pack_forget)
+            ("Key Mapping", self.wrap_command(lambda: self.show_frame("KeyMapping"))),
+            ("Key Shortcuts", self.wrap_command(lambda: self.show_frame("KeyShortcuts"))),
+            ("Back", self.wrap_command(lambda: self.go_back()))
         ]
 
         for text, command in self.keyboard_buttons:
             btn = BouncingButton(self.keyboard_button_frame, text=text, command=command)
             btn.pack(fill="x", padx=10, pady=5, ipady=5)
 
-        # Register keyboard frames in the self.frames dictionary
-        self.frames[KeyRemapView] = KeyRemapView(self.container, self)
-        self.frames[KeyShortcutsView] = KeyShortcutsView(self.container, self)
-        
-        # Register other views
-        self.frames[SettingsView] = SettingsView(self.container, self)
-        self.frames[TaskbarView] = TaskbarView(self.container, self)
+        # Register Keyboard views using string keys
+        self.frames["KeyMapping"] = KeyRemapView(self.container, self)
+        self.frames["KeyShortcuts"] = KeyShortcutsView(self.container, self)
+
+        # Register other views with string keys
+        self.frames["Settings"] = SettingsView(self.container, self)
+        self.frames["Taskbar"] = TaskbarView(self.container, self)
 
     def show_main_menu(self):
         """Show the main menu buttons."""
@@ -145,18 +147,54 @@ class MainApp(ctk.CTk):
         for btn in self.main_button_objects:
             btn.pack(fill="x", padx=10, pady=5, ipady=5)
 
-    def show_trackpad_menu(self):
-        """Show the Trackpad submenu buttons."""
-        self.touchpad_button_frame.pack()
-
-    def show_keyboard_menu(self):
-        """Show the Keyboard submenu buttons."""
-        self.keyboard_button_frame.pack()
+    def wrap_command(self, command):
+        def wrapped_command():
+            if not SlidingFrame.animation_lock:
+                command()
+        return wrapped_command
 
     def show_frame(self, frame_key):
-        # Show the corresponding frame
+        """Show the corresponding frame and disable widgets in the current frame."""
+        # Disable all widgets in the current top frame before moving to the next frame
+        current_frame = self.frame_stack[-1]  # Get the top frame in the stack
+        self.disable_widgets(current_frame)
+
+        # Show the selected frame and push it onto the frame stack
         frame = self.frames[frame_key]
         frame.pack()
+        self.frame_stack.append(frame)  # Push the new frame onto the stack
+
+        print("current stack after append: ", self.frame_stack)
+
+    def disable_widgets(self, frame):
+        """Disable all buttons in the given frame."""
+        for widget in frame.winfo_children():
+            # Check if the widget has a 'state' attribute and disable it if it's a button
+            if isinstance(widget, BouncingButton):
+                widget.configure(state="disabled")
+
+    def enable_widgets(self):
+        """Enable widgets in the previous frame."""
+        # Get the new top frame in the stack (either a subframe or the main menu)
+        previous_frame = self.frame_stack[-1]  # Get the previous frame
+
+        # Enable all widgets in the previous frame
+        for widget in previous_frame.winfo_children():
+            if isinstance(widget, BouncingButton):
+                widget.configure(state="normal")
+
+    def go_back(self):
+        """Go back to the previous frame and enable widgets."""
+        if len(self.frame_stack) > 1:  # Ensure there's a previous frame to go back to
+            # Remove the current frame from the stack and hide it
+            current_frame = self.frame_stack.pop()
+            
+            print("current stack after pop: ", self.frame_stack)
+            
+            current_frame.pack_forget()  # Hide the current frame
+
+            # Enable widgets in the new top frame (previous frame)
+            self.enable_widgets()
 
     def hide_all_frames(self):
         """Hide all frames."""
@@ -167,8 +205,6 @@ class MainApp(ctk.CTk):
         """Hide all submenu buttons."""
         for btn in self.main_button_objects:
             btn.pack_forget()
-        #self.touchpad_button_frame.pack_forget()
-        #self.keyboard_button_frame.pack_forget()
 
     def load_settings(self):
         """Load settings from settings.json."""

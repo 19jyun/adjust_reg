@@ -63,7 +63,7 @@ class SettingsView(SlidingFrame):
         self.display_discharge_rate_checkbox = ctk.CTkCheckBox(self, text="Always display battery discharge rate", variable=self.display_discharge_rate_var, command=self.toggle_display_discharge_rate)
         self.display_discharge_rate_checkbox.pack(pady=10)
         
-        BouncingButton(self, text="Back", command=self.pack_forget).pack(pady=10)
+        BouncingButton(self, text="Back", command=self.controller.wrap_command(self.controller.go_back)).pack(pady=10)
 
     def load_settings(self):
         """Load settings from settings.json"""
@@ -148,9 +148,8 @@ class SettingsView(SlidingFrame):
             for value_name in values_to_delete:
                 try:
                     winreg.DeleteValue(reg_key, value_name)
-                    print(f"Deleted value: {value_name} from {registry_path}")
                 except FileNotFoundError:
-                    print(f"Value '{value_name}' not found in {registry_path}. Skipping...")
+                    pass
             winreg.CloseKey(reg_key)
         except FileNotFoundError:
             print(f"Registry path '{registry_path}' not found. Skipping...")

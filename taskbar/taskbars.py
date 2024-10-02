@@ -104,7 +104,7 @@ class TaskbarView(SlidingFrame):
         btn_save = BouncingButton(frame_buttons, text="Save", command=self.save_taskbar_values_with_prompt)
         btn_save.pack(pady=5)
         
-        btn_back = BouncingButton(frame_buttons, text="Back", command=self.pack_forget)
+        btn_back = BouncingButton(frame_buttons, text="Back", command=self.controller.wrap_command(self.controller.go_back))
         btn_back.pack(pady=5)
         
     def setup_image(self, current_width=None, current_transparency=None, label_position=None):
@@ -159,27 +159,16 @@ class TaskbarView(SlidingFrame):
             if source == "slider_taskbar_length" or source == "entry_taskbar_length":
                 # Calculate new taskbar width based on the slider value
                 self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.slider_taskbar_length.get())
-                print("update called from length")
-
             elif source == "slider_taskbar_transparency" or source == "entry_taskbar_transparency":
                 # Calculate and store the transparency value
                 self.current_transparency = int(255 * (self.slider_taskbar_transparency.get() / self.max_taskbar_transparency))  # Alpha value (0-255)
-                print("update called from transparency")
-                print("current transparency:", self.current_transparency)
-
             elif source == "position_dropdown":
                 self.label_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.current_height
-                print("update called from position")
                 
         else: # Update all values if no source is provided
             self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.slider_taskbar_length.get())
             self.current_transparency = int(255 * (self.slider_taskbar_transparency.get() / self.max_taskbar_transparency))  # Alpha value (0-255)
-            self.label_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.current_height
-            print("update called from else")
-            print("current width", self.current_width)
-            print("current transparency", self.current_transparency)
-            print("label position", self.label_position)
-            
+            self.label_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.current_height 
         # Apply the updates to the image and label at the end
         # 1. Resize the taskbar image based on the current width and height
         self.taskbar_image_resized = self.taskbar_image.resize((self.current_width, self.current_height), Image.Resampling.LANCZOS)

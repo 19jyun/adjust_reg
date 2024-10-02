@@ -161,12 +161,3 @@ class AnimatedSwitch(ctk.CTkFrame):
     def get(self):
         """Get the current state of the switch."""
         return self.on
-if __name__ == "__main__":
-    def on_toggle():
-        print("Switch toggled")
-
-    root = tk.Tk()
-    root.configure(bg="black")
-    switch = AnimatedSwitch(root, command=on_toggle)
-    switch.pack(pady=10)
-    root.mainloop()

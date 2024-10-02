@@ -36,9 +36,10 @@ class BouncingButton(ctk.CTkButton):
         """Animate the button to grow and shrink subtly, simulating a bounce."""
         if step < self.steps:
             # Calculate the scale factor using an ease-out effect
+            # change the minus sign to plus sign to make the button grow
             t = step / self.steps
-            scale_factor = 1 + (self.bounce_scale - 1) * self.ease_out(t) if step < self.steps // 2 else \
-                           1 + (self.bounce_scale - 1) * self.ease_out(1 - t)
+            scale_factor = 1 - (self.bounce_scale - 1) * self.ease_out(t) if step < self.steps // 2 else \
+                           1 - (self.bounce_scale - 1) * self.ease_out(1 - t)
             
             # Apply the scale factor to the button's width and height
             new_width = int(self.original_width * scale_factor)
@@ -87,32 +88,3 @@ class BouncingButton(ctk.CTkButton):
 
         # Apply any other configurations passed to the superclass method
         super().configure(**kwargs)
-
-# Test the BouncingButton with a simple UI
-if __name__ == "__main__":
-    # Create a basic CustomTkinter window
-    root = ctk.CTk()
-    root.geometry("400x300")
-    root.title("Bouncing Button Test")
-
-    # Define a test function to be called on click
-    def test_command():
-        print("Button Clicked!")
-
-    # Create and place the bouncing button in the middle of the window with a command
-    bouncing_button = BouncingButton(root, text="Click Me!", fg_color="blue", hover_color="lightblue", width=150, height=40, command=test_command)
-    bouncing_button.place(relx=0.5, rely=0.5, anchor=tk.CENTER)  # Center the button in the window
-
-    # Toggle button state after 3 seconds for demonstration
-    def toggle_state():
-        if bouncing_button.state == "normal":
-            bouncing_button.configure(state="disabled")
-        else:
-            bouncing_button.configure(state="normal")
-
-    # Set a toggle state button
-    toggle_button = ctk.CTkButton(root, text="Toggle Bouncing Button State", command=toggle_state)
-    toggle_button.pack(pady=20)
-
-    # Run the application
-    root.mainloop()

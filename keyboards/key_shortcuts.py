@@ -122,7 +122,7 @@ class KeyShortcutsView(SlidingFrame):
         self.reset_button = BouncingButton(button_frame, text="Reset", command=self.reset_shortcuts)
         self.reset_button.pack(side=tk.LEFT, padx=10)
 
-        self.back_button = BouncingButton(self, text="Back", command=self.pack_forget)
+        self.back_button = BouncingButton(self, text="Back", command=self.controller.wrap_command(self.controller.go_back))
         self.back_button.pack(pady=10)
 
     def toggle_shortcuts(self):
@@ -132,8 +132,8 @@ class KeyShortcutsView(SlidingFrame):
             widget.configure(state=state)
             
         for button in [self.add_button, self.delete_from_button, self.delete_to_button, self.save_button, self.reset_button]:
-            #button.configure(state=state)
-            pass
+            button.configure(state=state)
+            
         # temporarily unhook all hotkeys when disabled
         if state == "disabled":
             keyboard.unhook_all()

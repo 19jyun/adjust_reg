@@ -91,7 +91,7 @@ class KeyRemapView(SlidingFrame):
         BouncingButton(button_frame, text="Save Mappings", command=self.save_mappings).grid(row=0, column=0, padx=10)
         BouncingButton(button_frame, text="Reset", command=self.reset_mappings).grid(row=0, column=1, padx=10)
 
-        BouncingButton(self, text="Back", command=self.pack_forget).pack(pady=10)
+        BouncingButton(self, text="Back", command=self.controller.wrap_command(self.controller.go_back)).pack(pady=10)
         # List to display the current remappings
         self.update_remapped_list()
 
@@ -167,9 +167,11 @@ class KeyRemapView(SlidingFrame):
                 prompt_reboot()
                             
             except FileNotFoundError: #No remapping information at the first place
-                print("No remapping found in the registry.")
+                #print("No remapping found in the registry.")
+                pass
             except Exception as e:
-                print(f"Failed to delete Scancode Map from registry")
+                #print(f"Failed to delete Scancode Map from registry")
+                pass
 
     def get_remapped_list(self):
         try:

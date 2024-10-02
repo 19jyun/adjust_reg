@@ -73,7 +73,7 @@ class TouchpadView(SlidingFrame):
         btn_save = BouncingButton(frame_buttons, text="Save", command=self.save_values_with_prompt)
         btn_save.grid(row=0, column=0, padx=10)
         
-        btn_back = BouncingButton(frame_buttons, text="Back", command=self.back_to_main_menu)
+        btn_back = BouncingButton(frame_buttons, text="Back", command=self.controller.wrap_command(self.controller.go_back))
         btn_back.grid(row=0, column=1, padx=10)
 
     def setup_image(self):
