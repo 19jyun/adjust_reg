@@ -164,8 +164,6 @@ class MainApp(ctk.CTk):
         frame.pack()
         self.frame_stack.append(frame)  # Push the new frame onto the stack
 
-        print("current stack after append: ", self.frame_stack)
-
     def disable_widgets(self, frame):
         """Disable all buttons in the given frame."""
         for widget in frame.winfo_children():
@@ -187,12 +185,8 @@ class MainApp(ctk.CTk):
         """Go back to the previous frame and enable widgets."""
         if len(self.frame_stack) > 1:  # Ensure there's a previous frame to go back to
             # Remove the current frame from the stack and hide it
-            current_frame = self.frame_stack.pop()
-            
-            print("current stack after pop: ", self.frame_stack)
-            
+            current_frame = self.frame_stack.pop()            
             current_frame.pack_forget()  # Hide the current frame
-
             # Enable widgets in the new top frame (previous frame)
             self.enable_widgets()
 

@@ -166,9 +166,16 @@ minimize instead of quit could replace this option maybe (check on resource usag
 
 **Update Image doesn't produce expected results**
 - taskbar 자꾸 투명하게 나옴, 클릭하면 바로 고쳐짐
+- 사실 큰 버그도 아니고 그냥 냅두는게 정신건강에 이로울듯
 
 **키보드 shortcut 활성화 비활성화**
 -이건 구현 완료했음 (switch on 인 상태로 시작되면 색상이 이상해지는 버그 존재)
+
+이 두 버그 제외하곤 괜츈한듯?
+
+**키보드 단축키 리매핑은 따로 구현해놓고, enable 그 설정 true로 되어있으면 컴퓨터 부팅시 자동시작해서 바로 자동으로 키보드 매핑되도록 설정할것**
+
+**가능하면 위 기능 배터리에도 똑같이 적용**
 
 _______________
 

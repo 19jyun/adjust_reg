@@ -54,13 +54,8 @@ class KeyShortcutsView(SlidingFrame):
         }
 
     def setup_ui(self):
-        self.switch_frame = ctk.CTkFrame(self)
-        self.switch_frame.pack(pady=10)
-        
-        ctk.CTkLabel(self.switch_frame, text="Enable/Disable Key Remapping").pack(side=tk.LEFT, padx=10)
-        
-        self.animated_switch = AnimatedSwitch(self.switch_frame, command=self.toggle_shortcuts)
-        self.animated_switch.pack(side=tk.LEFT, padx=10)
+        self.animated_switch = AnimatedSwitch(self, command=self.toggle_shortcuts)
+        self.animated_switch.pack(pady=10)
 
         ctk.CTkLabel(self, text="Select Key Combination to Remap:").pack(pady=5)
 
