@@ -21,6 +21,10 @@ class SettingsView(SlidingFrame):
         super().__init__(parent, width=self.screen_info.window_width, height=self.screen_info.window_height)
         self.controller = controller
         
+        scroll_width = self.screen_info.window_width
+        scroll_height = self.screen_info.window_height
+        self.scrollable_frame = ctk.CTkScrollableFrame(self, width=scroll_width, height=scroll_height)
+        self.scrollable_frame.pack(fill="both", expand=True)
         
         # Load settings.json
         self.settings = self.load_settings()
@@ -49,21 +53,21 @@ class SettingsView(SlidingFrame):
     def create_ui_elements(self):
         """Create the UI elements for the settings view."""
         self.admin_rights_var = ctk.BooleanVar(value=self.settings.get("require_admin", False))
-        self.admin_rights_checkbox = ctk.CTkCheckBox(self, text="Automatically give admin rights", variable=self.admin_rights_var, command=self.toggle_admin_rights)
+        self.admin_rights_checkbox = ctk.CTkCheckBox(self.scrollable_frame, text="Automatically give admin rights", variable=self.admin_rights_var, command=self.toggle_admin_rights)
         self.admin_rights_checkbox.pack(pady=10)
 
-        self.reset_button = BouncingButton(self, text="Reset All Changes", command=self.reset_options)
+        self.reset_button = BouncingButton(self.scrollable_frame, text="Reset All Changes", command=self.reset_options)
         self.reset_button.pack(pady=10)
 
         self.minimize_to_tray_var = ctk.BooleanVar(value=self.settings.get("minimize_to_tray", False))
-        self.minimize_to_tray_checkbox = ctk.CTkCheckBox(self, text="Minimize to system tray instead of completely quitting", variable=self.minimize_to_tray_var, command=self.toggle_minimize_to_tray)
+        self.minimize_to_tray_checkbox = ctk.CTkCheckBox(self.scrollable_frame, text="Minimize to system tray instead of completely quitting", variable=self.minimize_to_tray_var, command=self.toggle_minimize_to_tray)
         self.minimize_to_tray_checkbox.pack(pady=10)
 
         self.display_discharge_rate_var = ctk.BooleanVar(value=self.settings.get("Display discharge rate", False))
-        self.display_discharge_rate_checkbox = ctk.CTkCheckBox(self, text="Always display battery discharge rate", variable=self.display_discharge_rate_var, command=self.toggle_display_discharge_rate)
+        self.display_discharge_rate_checkbox = ctk.CTkCheckBox(self.scrollable_frame, text="Always display battery discharge rate", variable=self.display_discharge_rate_var, command=self.toggle_display_discharge_rate)
         self.display_discharge_rate_checkbox.pack(pady=10)
         
-        BouncingButton(self, text="Back", command=self.controller.wrap_command(self.controller.go_back)).pack(pady=10)
+        BouncingButton(self.scrollable_frame, text="Back", command=self.controller.wrap_command(self.controller.go_back)).pack(pady=10)
 
     def load_settings(self):
         """Load settings from settings.json"""

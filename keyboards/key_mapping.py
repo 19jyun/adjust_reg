@@ -61,37 +61,43 @@ class KeyRemapView(SlidingFrame):
         # Store the remapped keys
         self.remapped_keys = []
 
+        # Create a main container frame using 90% of the parent dimensions
+        scroll_width = self.screen_info.window_width
+        scroll_height = self.screen_info.window_height
+        self.container_frame = ctk.CTkScrollableFrame(self, width=scroll_width, height=scroll_height)
+        self.container_frame.pack(fill="both", expand=True)  # Center the container frame within the parent
+
         # Layout
         self.setup_ui()
 
     def setup_ui(self):
         # Dropdowns for key selection
-        ctk.CTkLabel(self, text="Select Key to Remap:").pack(pady=5)
+        ctk.CTkLabel(self.container_frame, text="Select Key to Remap:").pack(pady=5)
         self.key_from_var = tk.StringVar()
-        self.key_from_dropdown = ctk.CTkComboBox(self, variable=self.key_from_var, values=list(self.available_keys.keys()))
+        self.key_from_dropdown = ctk.CTkComboBox(self.container_frame, variable=self.key_from_var, values=list(self.available_keys.keys()))
         self.key_from_dropdown.pack(pady=5)
 
-        ctk.CTkLabel(self, text="Select Key to Remap To:").pack(pady=5)
+        ctk.CTkLabel(self.container_frame, text="Select Key to Remap To:").pack(pady=5)
         self.key_to_var = tk.StringVar()
-        self.key_to_dropdown = ctk.CTkComboBox(self, variable=self.key_to_var, values=list(self.available_keys.keys()))
+        self.key_to_dropdown = ctk.CTkComboBox(self.container_frame, variable=self.key_to_var, values=list(self.available_keys.keys()))
         self.key_to_dropdown.pack(pady=5)
 
         # Add button
-        BouncingButton(self, text="Add Remapping", command=self.add_remapping).pack(pady=10)
+        BouncingButton(self.container_frame, text="Add Remapping", command=self.add_remapping).pack(pady=10)
 
         # Scrollable frame to display remapped keys
-        self.scrollable_frame = ctk.CTkScrollableFrame(self, width=400, height=200)
+        self.scrollable_frame = ctk.CTkScrollableFrame(self.container_frame, width=400, height=200)
         self.scrollable_frame.pack(pady=10)
 
         self.get_remapped_list() #retrieves the remapped keys from the registry and updates the list
 
         # Save and Reset buttons
-        button_frame = ctk.CTkFrame(self)
+        button_frame = ctk.CTkFrame(self.container_frame)
         button_frame.pack(pady=10)
         BouncingButton(button_frame, text="Save Mappings", command=self.save_mappings).grid(row=0, column=0, padx=10)
         BouncingButton(button_frame, text="Reset", command=self.reset_mappings).grid(row=0, column=1, padx=10)
 
-        BouncingButton(self, text="Back", command=self.controller.wrap_command(self.controller.go_back)).pack(pady=10)
+        BouncingButton(self.container_frame, text="Back", command=self.controller.wrap_command(self.controller.go_back)).pack(pady=10)
         # List to display the current remappings
         self.update_remapped_list()
 

@@ -8,6 +8,7 @@ import tkinter as tk
 from tkinter.messagebox import askyesno
 
 # Import the consolidated trackpad view class
+from intro import IntroView
 from trackpad.touchpad import TouchpadView
 from keyboards.key_mapping import KeyRemapView
 from keyboards.key_shortcuts import KeyShortcutsView
@@ -17,7 +18,6 @@ from tray_icons import tray_manager
 from taskbar.taskbars import TaskbarView
 from widgets.button import BouncingButton
 from widgets.sliding_frames import SlidingFrame
-
 
 def is_admin():
     """Check if the current script is run as an administrator."""
@@ -56,7 +56,7 @@ class MainApp(ctk.CTk):
             run_as_admin()
 
         super().__init__()
-
+        
         self.screen_info = ScreenInfo()
 
         self.title("Trackpad Registry Manager")
@@ -70,6 +70,10 @@ class MainApp(ctk.CTk):
         # Main container
         self.container = ctk.CTkFrame(self)
         self.container.pack(fill="both", expand=True)
+
+        # Create and display the IntroView within the main container
+        intro_frame = IntroView(self)
+        intro_frame.display()
 
         self.frame_stack = [self.container]
         

@@ -23,6 +23,16 @@ class KeyShortcutsView(SlidingFrame):
         self.available_keys = self.get_available_keys()
         self.shortcut_mappings = []  # To display in the UI
 
+        scroll_width = self.screen_info.window_width
+        scroll_height = self.screen_info.window_height
+        self.container_frame = ctk.CTkScrollableFrame(self, width=scroll_width, height=scroll_height)
+        self.container_frame.pack(fill="both", expand=True)  # Center the container frame within the parent
+
+        # dropdown width is determined by scrollable frame width and padding x
+        self.dropdown_width = (scroll_width - 20) // 4
+        # button width is determined by scrollable frame width and padding x
+        self.button_width = (scroll_width - 20) // 3
+
         self.setup_ui()
         
         self.load_shortcuts()
@@ -54,16 +64,16 @@ class KeyShortcutsView(SlidingFrame):
         }
 
     def setup_ui(self):
-        self.animated_switch = AnimatedSwitch(self, command=self.toggle_shortcuts)
+        self.animated_switch = AnimatedSwitch(self.container_frame, command=self.toggle_shortcuts)
         self.animated_switch.pack(pady=10)
 
-        ctk.CTkLabel(self, text="Select Key Combination to Remap:").pack(pady=5)
+        ctk.CTkLabel(self.container_frame, text="Select Key Combination to Remap:").pack(pady=5)
 
         # Create frames to hold up to 4 keys for 'from' and 'to' combinations
-        self.from_key_frame = ctk.CTkFrame(self)
+        self.from_key_frame = ctk.CTkFrame(self.container_frame)
         self.from_key_frame.pack(pady=5, fill="x")
 
-        self.to_key_frame = ctk.CTkFrame(self)
+        self.to_key_frame = ctk.CTkFrame(self.container_frame)
         self.to_key_frame.pack(pady=5, fill="x")
 
         # Create arrays to hold the variables and dropdowns for 'from' and 'to' keys
@@ -71,8 +81,6 @@ class KeyShortcutsView(SlidingFrame):
         self.key_to_vars = [tk.StringVar() for _ in range(4)]
         self.key_from_dropdowns = []
         self.key_to_dropdowns = []
-
-        self.dropdown_width = self.screen_info.window_width // 4 - 10
 
         # Initialize the first dropdown visible and rest invisible
         for i in range(4):
@@ -91,23 +99,23 @@ class KeyShortcutsView(SlidingFrame):
                 self.key_from_dropdowns[i].pack_forget()  # Hide the dropdown
                 self.key_to_dropdowns[i].pack_forget()    # Hide the dropdown
 
-        upper_button_frame = ctk.CTkFrame(self)
+        upper_button_frame = ctk.CTkFrame(self.container_frame)
         upper_button_frame.pack(pady=10)
 
         # Add and display shortcuts
-        self.delete_from_button = BouncingButton(upper_button_frame, text="Delete \u2191", command=self.delete_last_from_dropdown)
+        self.delete_from_button = BouncingButton(upper_button_frame, text="Delete \u2191", command=self.delete_last_from_dropdown, width=self.button_width)
         self.delete_from_button.pack(side=tk.LEFT, padx=5)
         
-        self.delete_to_button = BouncingButton(upper_button_frame, text="Delete \u2193", command=self.delete_last_to_dropdown)
+        self.delete_to_button = BouncingButton(upper_button_frame, text="Delete \u2193", command=self.delete_last_to_dropdown, width=self.button_width)
         self.delete_to_button.pack(side=tk.LEFT, padx=5)
         
-        self.add_button = BouncingButton(upper_button_frame, text="Add Shortcut", command=self.add_shortcut)
+        self.add_button = BouncingButton(upper_button_frame, text="Add Shortcut", command=self.add_shortcut, width=self.button_width)
         self.add_button.pack(pady=10)
 
-        self.scrollable_frame = ctk.CTkScrollableFrame(self, width=self.screen_info.window_width*0.8, height=self.screen_info.window_height*0.3)
+        self.scrollable_frame = ctk.CTkScrollableFrame(self.container_frame, width=self.screen_info.window_width*0.8, height=self.screen_info.window_height*0.3)
         self.scrollable_frame.pack(pady=10)
 
-        button_frame = ctk.CTkFrame(self)
+        button_frame = ctk.CTkFrame(self.container_frame)
         button_frame.pack(pady=10)
 
         # Add save and reset buttons
@@ -117,17 +125,13 @@ class KeyShortcutsView(SlidingFrame):
         self.reset_button = BouncingButton(button_frame, text="Reset", command=self.reset_shortcuts)
         self.reset_button.pack(side=tk.LEFT, padx=10)
 
-        self.back_button = BouncingButton(self, text="Back", command=self.controller.wrap_command(self.controller.go_back))
+        self.back_button = BouncingButton(self.container_frame, text="Back", command=self.controller.wrap_command(self.controller.go_back))
         self.back_button.pack(pady=10)
 
     def toggle_shortcuts(self):
         """Enable or disable all elements except the 'Back' button based on switch state."""
         state = "normal" if self.animated_switch.get() else "disabled"
-        for widget in self.from_key_frame.winfo_children() + self.to_key_frame.winfo_children():
-            widget.configure(state=state)
-            
-        for button in [self.add_button, self.delete_from_button, self.delete_to_button, self.save_button, self.reset_button]:
-            button.configure(state=state)
+        self.toggle_widgets(self.container_frame, state)
             
         # temporarily unhook all hotkeys when disabled
         if state == "disabled":
@@ -211,6 +215,21 @@ class KeyShortcutsView(SlidingFrame):
         """Apply the shortcut remappings from the dictionary."""
         for key, shortcut in shortcut_remappings.items():
             self.register_hotkey(shortcut)
+
+    def toggle_widgets(self, frame, state):
+        """Enable or disable only interactive widgets in the given frame, excluding the back button."""
+        for widget in frame.winfo_children():
+            # Skip the back button to prevent it from being disabled
+            if widget == self.back_button:
+                continue
+
+            # Only configure state for interactive widgets that support it
+            if isinstance(widget, (ctk.CTkButton, ctk.CTkComboBox, ctk.CTkEntry, ctk.CTkCheckBox)):
+                widget.configure(state=state)
+
+        # Explicitly configure known buttons in the view, excluding the back button
+        for button in [self.add_button, self.delete_from_button, self.delete_to_button, self.save_button, self.reset_button]:
+            button.configure(state=state)
 
     def load_shortcuts(self):
         """Load shortcuts from a JSON file if it exists and apply them."""

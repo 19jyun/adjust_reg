@@ -25,7 +25,10 @@ class TaskbarView(SlidingFrame):
         self.screen_info = ScreenInfo()
         
         # Scrollable frame for taskbar settings
-        self.scrollable_frame = ctk.CTkScrollableFrame(self, width=500, height=600)
+        
+        scroll_width = self.screen_info.window_width
+        scroll_height = self.screen_info.window_height
+        self.scrollable_frame = ctk.CTkScrollableFrame(self, width=scroll_width, height=scroll_height)
         self.scrollable_frame.pack(fill="both", expand=True)
 
         # Registry paths and keys for taskbar settings

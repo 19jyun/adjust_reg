@@ -63,6 +63,27 @@ class ScreenInfo:
         screen_area = monitor_info.rcMonitor
         taskbar_height = screen_area.bottom - work_area.bottom
         return taskbar_height
+       
+    def get_physical_monitor_size(self):
+        """Retrieve the physical dimensions of the primary monitor in inches."""
+        user32 = ctypes.windll.user32
+        hdc = user32.GetDC(0)
+        
+        # Retrieve the width and height in millimeters
+        HORZSIZE = 4  # Width in millimeters
+        VERTSIZE = 6  # Height in millimeters
+        width_mm = ctypes.windll.gdi32.GetDeviceCaps(hdc, HORZSIZE)
+        height_mm = ctypes.windll.gdi32.GetDeviceCaps(hdc, VERTSIZE)
+
+        if width_mm > 0 and height_mm > 0:
+            # Convert millimeters to inches (1 inch = 25.4 mm)
+            width_in = width_mm / 25.4
+            height_in = height_mm / 25.4
+        else:
+            # Use default values if unable to retrieve dimensions
+            width_in, height_in = 15.0, 9.0  # Typical laptop size
+
+        return width_in, height_in
         
     def get_window_size(self):
         scaling_factor = self.get_scaling_factor()
@@ -75,9 +96,30 @@ class ScreenInfo:
         self.screen_width = screen_width
         self.screen_height = screen_height
         
+                # Get physical dimensions of the monitor in inches
+        physical_width, physical_height = self.get_physical_monitor_size()
+        
+        width, height = 0, 0
+        # Determine proportions based on physical size
+        if physical_width < 15:
+            width = 300
+            height = 550
+        elif 15 <= physical_width <= 18:
+            width = 350
+            height = 600
+        elif 18 < physical_width <= 24:
+            width = 400
+            height = 650
+        elif 24 < physical_width <= 27:
+            width = 450
+            height = 700
+        else:
+            width = 500
+            height = 750
+        
         # Adjust window size based on DPI scaling factor
-        window_width = int((screen_width * 0.26))
-        window_height = int((screen_height * 0.65))
+        window_width = width
+        window_height = height
         
         # Calculate taskbar height and subtract it from the vertical position
         taskbar_height = self.get_taskbar_height()
@@ -87,11 +129,21 @@ class ScreenInfo:
         position_down = screen_height - window_height - taskbar_height - 5  # 5px margin from taskbar
         
         # Adjust window size based on DPI scaling factor
-        dpi_window_width = int((screen_width * 0.26)/scaling_factor)
-        dpi_window_height = int((screen_height * 0.65)/scaling_factor)
+        dpi_window_width = int(window_width/scaling_factor)
+        dpi_window_height = int(window_height/scaling_factor)
         
         self.window_width = dpi_window_width
         self.window_height = dpi_window_height
         
         return f"{dpi_window_width}x{dpi_window_height}+{position_right}+{position_down}"
     
+# Main function to test the get_physical_monitor_size method
+def main():
+    screen_info = ScreenInfo()
+    width_in, height_in = screen_info.get_physical_monitor_size()
+    print(f"Physical Monitor Size: {width_in:.2f} inches (Width) x {height_in:.2f} inches (Height)")
+    print(f"window_width: {screen_info.window_width}")
+    print(f"window_height: {screen_info.window_height}")
+
+if __name__ == "__main__":
+    main()
