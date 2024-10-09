@@ -24,7 +24,7 @@ class IntroView(SlidingFrame):
         # Correct path to the icon image in the `tray_icons` folder
         self.icon_image_path = os.path.join(base_dir, "tray_icons", "registry.png")
 
-        print("Intro Frame Size:", self.screen_info.window_width, self.screen_info.window_height)
+        #print("Intro Frame Size:", self.screen_info.window_width, self.screen_info.window_height)
         
         # Create a central frame to hold the image and text
         self.content_frame = ctk.CTkFrame(self)
