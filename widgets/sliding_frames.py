@@ -91,13 +91,14 @@ class SlidingFrame(ctk.CTkFrame):
         self.update_idletasks()
         self.place(x=x_offset, y=self._calculate_center_y())
 
-    def display(self):
-        """Display the frame where the sliding-out animation will start."""
+    def display(self, x=None, y=None):
+        """Display the frame in the initial position for the sliding-out animation."""
         self.update_idletasks()  # Ensure widget dimensions are properly calculated
-        # Use slide_out_x and slide_out_y if defined; otherwise, center the frame
-        start_x = self.slide_out_x if self.slide_out_x is not None else (self.parent.winfo_width() - self.width) // 2
-        start_y = self.slide_out_y if self.slide_out_y is not None else (self.parent.winfo_height() - self.height) // 2
-        self.place(x=start_x, y=start_y)  # Place the frame at the starting position for animation
+
+        pos_x = x if x is not None else 0
+        pos_y = y if y is not None else 0
+
+        self.place(x=pos_x, y=pos_y)  # Place the frame at the initial position
         self.is_visible = True  # Mark frame as visible
 
 

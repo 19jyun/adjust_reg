@@ -47,9 +47,9 @@ class IntroView(SlidingFrame):
         )
         self.program_name_label.pack(pady=10)
 
-        # Automatically slide out and pack_forget after 3 seconds
-        self.after(3000, self.hide_intro_frame)
+        # Automatically slide out and pack_forget after 2 seconds
+        self.after(2000, self.hide_intro_frame)
 
     def hide_intro_frame(self):
         """Slide out the intro frame and hide it."""
-        self.pack_forget()  # Slide out and hide the frame after 3 seconds
+        self.pack_forget()  # Slide out and hide the frame after 2 seconds

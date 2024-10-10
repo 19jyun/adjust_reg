@@ -98,28 +98,29 @@ class ScreenInfo:
         
                 # Get physical dimensions of the monitor in inches
         physical_width, physical_height = self.get_physical_monitor_size()
-        
+        physical_diagonal = (physical_width**2 + physical_height**2)**0.5 # actual screen size
+          
         width, height = 0, 0
         # Determine proportions based on physical size
-        if physical_width < 15:
-            width = 300
-            height = 550
-        elif 15 <= physical_width <= 18:
-            width = 350
-            height = 600
-        elif 18 < physical_width <= 24:
-            width = 400
-            height = 650
-        elif 24 < physical_width <= 27:
-            width = 450
-            height = 700
+        if physical_diagonal < 15:
+            width = 0.26
+            height = 0.55
+        elif 15 <= physical_diagonal <= 18:
+            width = 0.22
+            height = 0.50
+        elif 18 < physical_diagonal <= 24:
+            width = 0.20
+            height = 0.42
+        elif 24 < physical_diagonal <= 27:
+            width = 0.18
+            height = 0.35
         else:
-            width = 500
-            height = 750
+            width = 0.15
+            height = 0.30
         
         # Adjust window size based on DPI scaling factor
-        window_width = width
-        window_height = height
+        window_width = int(self.screen_width * width)
+        window_height = int(self.screen_height * height)
         
         # Calculate taskbar height and subtract it from the vertical position
         taskbar_height = self.get_taskbar_height()

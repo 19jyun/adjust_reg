@@ -35,7 +35,9 @@ class KeyShortcutsView(SlidingFrame):
 
         self.setup_ui()
         
-        self.load_shortcuts()
+        self.update_idletasks()
+        
+        self.after(1000, self.load_shortcuts())
         
     def get_available_keys(self):
         return {
@@ -127,6 +129,8 @@ class KeyShortcutsView(SlidingFrame):
 
         self.back_button = BouncingButton(self.container_frame, text="Back", command=self.controller.wrap_command(self.controller.go_back))
         self.back_button.pack(pady=10)
+        
+        self.after(100, self.toggle_shortcuts)
 
     def toggle_shortcuts(self):
         """Enable or disable all elements except the 'Back' button based on switch state."""
@@ -218,14 +222,8 @@ class KeyShortcutsView(SlidingFrame):
 
     def toggle_widgets(self, frame, state):
         """Enable or disable only interactive widgets in the given frame, excluding the back button."""
-        for widget in frame.winfo_children():
-            # Skip the back button to prevent it from being disabled
-            if widget == self.back_button:
-                continue
-
-            # Only configure state for interactive widgets that support it
-            if isinstance(widget, (ctk.CTkButton, ctk.CTkComboBox, ctk.CTkEntry, ctk.CTkCheckBox)):
-                widget.configure(state=state)
+        for widget in self.from_key_frame.winfo_children() + self.to_key_frame.winfo_children():
+            widget.configure(state=state)
 
         # Explicitly configure known buttons in the view, excluding the back button
         for button in [self.add_button, self.delete_from_button, self.delete_to_button, self.save_button, self.reset_button]:
