@@ -9,10 +9,12 @@ from tkinter import messagebox
 from tray_icons import tray_manager
 from widgets.button import BouncingButton
 from widgets.sliding_frames import SlidingFrame
+from widgets.theme_manager import trigger_theme_change
 from configuration_manager import ScreenInfo
 
 # settings.json 파일 경로
 SETTINGS_PATH = os.path.join(os.path.dirname(__file__), "settings.json")
+
 class SettingsView(SlidingFrame):
     def __init__(self, parent, controller):
         
@@ -66,7 +68,12 @@ class SettingsView(SlidingFrame):
         self.display_discharge_rate_var = ctk.BooleanVar(value=self.settings.get("Display discharge rate", False))
         self.display_discharge_rate_checkbox = ctk.CTkCheckBox(self.scrollable_frame, text="Always display battery discharge rate", variable=self.display_discharge_rate_var, command=self.toggle_display_discharge_rate)
         self.display_discharge_rate_checkbox.pack(pady=10)
-        
+
+        # Theme selection dropdown
+        self.theme_var = ctk.StringVar(value=self.settings.get("theme", "Auto"))
+        self.theme_dropdown = ctk.CTkOptionMenu(self.scrollable_frame, variable=self.theme_var, values=["Auto", "Light", "Dark"], command=self.change_theme)
+        self.theme_dropdown.pack(pady=10)
+
         BouncingButton(self.scrollable_frame, text="Back", command=self.controller.wrap_command(self.controller.go_back)).pack(pady=10)
 
     def load_settings(self):
@@ -75,7 +82,7 @@ class SettingsView(SlidingFrame):
             with open(SETTINGS_PATH, "r") as file:
                 return json.load(file)
         except FileNotFoundError:
-            return {"require_admin": False, "minimize_to_tray": False, "Display discharge rate": False}
+            return {"require_admin": False, "minimize_to_tray": False, "Display discharge rate": False, "theme": "Auto"}
 
     def save_settings(self):
         """Save settings to settings.json"""
@@ -132,6 +139,21 @@ class SettingsView(SlidingFrame):
 
             self.settings['Display discharge rate'] = display
         self.save_settings()
+
+    def change_theme(self, theme):
+        """Change theme setting and apply the theme immediately."""
+        self.settings['theme'] = theme
+        self.save_settings()
+        
+        # Apply theme using CustomTkinter's appearance setting
+        if theme == "Auto":
+            ctk.set_appearance_mode("system")  # Automatically follows system theme
+        elif theme == "Light":
+            ctk.set_appearance_mode("light")
+        elif theme == "Dark":
+            ctk.set_appearance_mode("dark")
+            
+        trigger_theme_change()
 
     def reset_options(self):
         """Reset registry keys to default values and reset settings"""
