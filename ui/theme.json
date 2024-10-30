@@ -1,0 +1,38 @@
+{
+    "dark": {
+        "button_color": "#2E2E2E",
+        "button_hover_color": "#444444",
+        "text_color": "#FFFFFF",
+        "background_color": "#1C1C1C",
+        "entry_background_color": "#333333",
+        "entry_text_color": "#FFFFFF",
+        "label_text_color": "#CCCCCC",
+        "font": [
+            "Arial",
+            14,
+            "bold"
+        ],
+        "secondary_font": [
+            "Arial",
+            12
+        ]
+    },
+    "light": {
+        "button_color": "#E0E0E0",
+        "button_hover_color": "#C0C0C0",
+        "text_color": "#000000",
+        "background_color": "#F5F5F5",
+        "entry_background_color": "#FFFFFF",
+        "entry_text_color": "#000000",
+        "label_text_color": "#333333",
+        "font": [
+            "Arial",
+            14,
+            "bold"
+        ],
+        "secondary_font": [
+            "Arial",
+            12
+        ]
+    }
+}
