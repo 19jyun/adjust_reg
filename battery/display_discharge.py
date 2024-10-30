@@ -114,20 +114,17 @@ def update_tray_icon(tray_icon):
 def stop_monitoring(icon):
     """Stop the monitoring by setting the stop_event and stopping the icon."""
     
-    settings_path = os.path.join(os.path.dirname(__file__), '../settings/settings.json')
-    with open(settings_path, 'r') as file:
-        settings = json.load(file)
-    
-    settings["Display discharge rate"] = False
-    
-    with open(settings_path, 'w') as file:
-        json.dump(settings, file, indent=4)
-    
+    global stop_event
     stop_event.set()
     icon.stop()
 
 def start_tray_icon():
     """Initialize and run the tray icon."""
+    
+    global stop_event
+    
+    stop_event.clear()
+    
     icon = pystray.Icon("Battery Monitor")
     icon.icon = create_image(64, 64, 0, "black")  # Default icon
     icon.title = "Initializing battery monitor..."
@@ -136,6 +133,6 @@ def start_tray_icon():
     )
     icon.run_detached()
     
-    Thread(target=update_tray_icon, args=(icon,)).start()
+    Thread(target=update_tray_icon, args=(icon,), daemon = True).start()
 
     return icon

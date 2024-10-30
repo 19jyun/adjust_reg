@@ -124,15 +124,13 @@ Trackpad
 - Hence, green/yellow area, along with the changed maximum width/height, should be adjusted (Same slider, but different max length and rate of change)
 
 Keyboard
-- Keymapping (Remapping) - completed
 - Disabling certain keys - Not started (probably add it to Keymapping?)
-- shortcuts - have to work on combinations and dynamic size for dropdown combobox (dynamic sizing for dropdown fixed)
 
 알트탭 고쳐야됨
 
 
 Battery discharge rate
-- Change polling rate - should be done in settings
+- Change polling rate - should be done in settings?
 
 Taskbar
 - Control transparency
