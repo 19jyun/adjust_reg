@@ -71,7 +71,7 @@ class SettingsView(SlidingFrame):
 
         # Theme selection dropdown
         self.theme_var = ctk.StringVar(value=self.settings.get("theme", "Auto"))
-        self.theme_dropdown = ctk.CTkOptionMenu(self.scrollable_frame, variable=self.theme_var, values=["Auto", "Light", "Dark"], command=self.change_theme)
+        self.theme_dropdown = ctk.CTkOptionMenu(self.scrollable_frame, variable=self.theme_var, values=["Dark", "Light"], command=self.change_theme)
         self.theme_dropdown.pack(pady=10)
 
         BouncingButton(self.scrollable_frame, text="Back", command=self.controller.wrap_command(self.controller.go_back)).pack(pady=10)
@@ -145,15 +145,12 @@ class SettingsView(SlidingFrame):
         self.settings['theme'] = theme
         self.save_settings()
         
-        # Apply theme using CustomTkinter's appearance setting
-        if theme == "Auto":
-            ctk.set_appearance_mode("system")  # Automatically follows system theme
-        elif theme == "Light":
+        if theme == "Light":
             ctk.set_appearance_mode("light")
         elif theme == "Dark":
             ctk.set_appearance_mode("dark")
             
-        trigger_theme_change()
+        trigger_theme_change() #re-render switch image
 
     def reset_options(self):
         """Reset registry keys to default values and reset settings"""

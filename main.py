@@ -214,18 +214,14 @@ class MainApp(ctk.CTk):
     def set_theme_from_settings(self):
         """Set the application theme based on the theme setting in settings.json."""
         settings = self.load_settings()
-        theme = settings.get("theme", "Auto")  # Default to 'Auto' if 'theme' not found
+        theme = settings.get("theme", "Dark")  # Default to 'Auto' if 'theme' not found
 
-        if theme == "Auto":
-            # Follow the system/device theme
-            ctk.set_appearance_mode("System")
-        elif theme.lower() == "dark":
+        if theme.lower() == "dark":
             ctk.set_appearance_mode("Dark")
         elif theme.lower() == "light":
             ctk.set_appearance_mode("Light")
         else:
-            # Fallback to system theme if an unknown theme is specified
-            ctk.set_appearance_mode("System")
+            ctk.set_appearance_mode("Dark")
 
 
     def quit_app(self):
