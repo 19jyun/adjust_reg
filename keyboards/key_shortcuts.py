@@ -6,7 +6,6 @@ from widgets.switch import AnimatedSwitch
 import keyboard
 import json
 import os
-from widgets.button import BouncingButton
 from widgets.sliding_frames import SlidingFrame
 from widgets.theme_manager import register_theme_change_callback
 
@@ -14,6 +13,16 @@ from widgets.theme_manager import register_theme_change_callback
 shortcut_remappings = {}
 SHORTCUT_FILE = "shortcuts.json"
 SETTINGS_FILE = "settings/settings.json"
+
+class BouncingButton(ctk.CTkButton):
+    def __init__(self, *args, **kwargs):
+        self.single_click_command = kwargs.pop('command', None)
+        super().__init__(*args, **kwargs)
+        self.bind("<Button-1>", self.on_click)
+
+    def on_click(self, event):
+        if self.single_click_command:
+            self.single_click_command()  # 단일 클릭 시 한 번만 실행되도록 수정
 
 class KeyShortcutsView(SlidingFrame):
     def __init__(self, parent, controller):
@@ -32,9 +41,16 @@ class KeyShortcutsView(SlidingFrame):
         self.dropdown_width = (scroll_width - 20) // 4
         self.button_width = (scroll_width - 20) // 3
         
-        # The index of the blank dropdown in the list
-        self.dropdown_from_idx = 0
-        self.dropdown_to_idx = 0
+        # number of selected dropdowns
+        # if 0, only one blank dropdown is displayed
+        # if 1, two dropdowns (1 blank, 1 selected) are displayed
+        # if 2, three dropdowns (1 blank, 2 selected) are displayed
+        # if 3, four dropdowns (1 blank, 3 selected) are displayed
+        # if 4, four dropdowns (all selected) are displayed
+
+        self.dropdown_idx = [0, 0]
+        
+
 
         self.setup_ui()
         self.update_idletasks()
@@ -50,20 +66,15 @@ class KeyShortcutsView(SlidingFrame):
             "Q": "q", "R": "r", "S": "s", "T": "t",
             "U": "u", "V": "v", "W": "w", "X": "x",
             "Y": "y", "Z": "z",
-            # Numbers
             "0": "0", "1": "1", "2": "2", "3": "3", "4": "4",
             "5": "5", "6": "6", "7": "7", "8": "8", "9": "9",
-            # Special characters
             "`": "`", "-": "-", "=": "=", "[": "[", "]": "]",
             "\\": "\\", ";": ";", "'": "'", ",": ",", ".": ".", "/": "/",
-            # Function keys
             "Esc": "esc", "F1": "f1", "F2": "f2", "F3": "f3", "F4": "f4",
             "F5": "f5", "F6": "f6", "F7": "f7", "F8": "f8", "F9": "f9",
             "F10": "f10", "F11": "f11", "F12": "f12",
-            # Control keys
             "Tab": "tab", "Caps Lock": "caps lock", "Shift": "shift", "Ctrl": "ctrl",
             "Alt": "alt", "Space": "space", "Enter": "enter", "Backspace": "backspace",
-            # Arrow keys
             "Up": "up", "Down": "down", "Left": "left", "Right": "right"
         }
 
@@ -83,19 +94,22 @@ class KeyShortcutsView(SlidingFrame):
         # Define key dropdowns
         self.key_from_vars = [ctk.StringVar() for _ in range(4)]
         self.key_to_vars = [ctk.StringVar() for _ in range(4)]
+        
+        self.dropdown_lists = [[],[]]
+        
         self.key_from_dropdowns = []
         self.key_to_dropdowns = []
 
-        for i in range(4):
+        for i in range(0, 4):
             dropdown_from = ctk.CTkComboBox(self.from_key_frame, variable=self.key_from_vars[i], values=list(self.available_keys.keys()), 
-                                            command=lambda idx=i : self.dropdown_selected_new('from'), width=self.dropdown_width)
+                                            command=lambda value, idx=i : self.change_dropdown(0, 'dropdown', idx), width=self.dropdown_width)
             dropdown_from.pack(side=tk.LEFT, padx=5, pady=5)
-            self.key_from_dropdowns.append(dropdown_from)
+            self.dropdown_lists[0].append(dropdown_from)
 
             dropdown_to = ctk.CTkComboBox(self.to_key_frame, variable=self.key_to_vars[i], values=list(self.available_keys.keys()), 
-                                          command=lambda idx=i : self.dropdown_selected_new('to'), width=self.dropdown_width)
+                                          command=lambda value, idx=i : self.change_dropdown(1, 'dropdown', idx), width=self.dropdown_width)
             dropdown_to.pack(side=tk.LEFT, padx=5, pady=5)
-            self.key_to_dropdowns.append(dropdown_to)
+            self.dropdown_lists[1].append(dropdown_to)
 
             if i > 0:
                 dropdown_from.pack_forget()
@@ -105,10 +119,10 @@ class KeyShortcutsView(SlidingFrame):
         upper_button_frame = ctk.CTkFrame(self.container_frame)
         upper_button_frame.pack(pady=10)
 
-        self.delete_from_button = BouncingButton(upper_button_frame, text="Delete \u2191", command=lambda: self.delete_dropdown('from'), width=self.button_width)
+        self.delete_from_button = BouncingButton(upper_button_frame, text="Delete \u2191", command=lambda: self.change_dropdown(0, 'button'), width=self.button_width)
         self.delete_from_button.pack(side=tk.LEFT, padx=5)
         
-        self.delete_to_button = BouncingButton(upper_button_frame, text="Delete \u2193", command=lambda: self.delete_dropdown('to'), width=self.button_width)
+        self.delete_to_button = BouncingButton(upper_button_frame, text="Delete \u2193", command=lambda: self.change_dropdown(1, 'button'), width=self.button_width)
         self.delete_to_button.pack(side=tk.LEFT, padx=5)
         
         self.add_button = BouncingButton(upper_button_frame, text="Add Shortcut", command=self.add_shortcut, width=self.button_width)
@@ -159,7 +173,7 @@ class KeyShortcutsView(SlidingFrame):
     def toggle_shortcuts(self):
         """Enable or disable UI elements based on switch state."""
         state = "normal" if self.animated_switch.get() else "disabled"
-        self.toggle_widgets(self.container_frame, state)
+        self.toggle_widgets(state)
 
         # Unhook or apply hotkeys based on switch state
         if state == "disabled":
@@ -178,7 +192,7 @@ class KeyShortcutsView(SlidingFrame):
         with open(SETTINGS_FILE, "w") as f:
             json.dump(settings_data, f, indent=4)
 
-    def toggle_widgets(self, frame, state):
+    def toggle_widgets(self, state):
         """Enable or disable interactive widgets in the given frame, excluding the back button."""
         for widget in self.from_key_frame.winfo_children() + self.to_key_frame.winfo_children():
             widget.configure(state=state)
@@ -186,113 +200,59 @@ class KeyShortcutsView(SlidingFrame):
         for button in [self.add_button, self.delete_from_button, self.delete_to_button, self.save_button, self.reset_button]:
             button.configure(state=state)
 
-    def dropdown_selected(self, idx, key_type):
-        """Show the next dropdown when an item is selected."""
-        if key_type == 'from' and idx < len(self.key_from_dropdowns) - 1:
-            self.key_from_dropdowns[idx + 1].pack(side=tk.LEFT, padx=5, pady=5)
-        elif key_type == 'to' and idx < len(self.key_to_dropdowns) - 1:
-            self.key_to_dropdowns[idx + 1].pack(side=tk.LEFT, padx=5, pady=5)
-            
-    def dropdown_selected_new(self, key_type):
+    def change_dropdown(self, key_type, caller, idx_dropdown=None):
         
-        print("Dropdown selected")
-        print("Key type: ", key_type)
+        if idx_dropdown is not None:
+            if idx_dropdown < self.dropdown_idx[key_type]:
+                return
+            
+        increment = 0
         
-        if key_type == 'from':
-            
-            print("Index of FROM dropdown: ", self.dropdown_from_idx)
-            
-            if self.dropdown_from_idx == 3:
-                pass
-            else:
-                self.dropdown_from_idx += 1
-                self.key_from_dropdowns[self.dropdown_from_idx].pack(side=tk.LEFT, padx=5, pady=5)
-
-            print("Index of FROM dropdown after changes have been applied: ", self.dropdown_from_idx)
-            print()
-
-        elif key_type == 'to':
-            
-            print("Index of TO dropdown: ", self.dropdown_to_idx)
-            
-            if self.dropdown_to_idx == 3:
-                pass
-            else:
-                self.dropdown_to_idx += 1
-                self.key_to_dropdowns[self.dropdown_to_idx].pack(side=tk.LEFT, padx=5, pady=5)
-            
-            print("Index of TO dropdown after changes have been applied: ", self.dropdown_to_idx)
-            print()
-            
-    def delete_dropdown(self, key_type):
+        if caller == 'dropdown':
+            increment = 1
+        elif caller == 'button':
+            increment = -1
+    
+        print("Called from: ", caller)
         
-        print("Delete dropdown")
-        print("Key type: ", key_type)
+        if self.dropdown_idx[key_type] == 4 and caller == 'dropdown': # already full
+            pass
+        elif self.dropdown_idx[key_type] == 0 and caller == 'button': # already empty
+            pass
+        else:
+            self.dropdown_idx[key_type] += increment
         
-        if key_type == 'from':
+        self.update_dropdowns(key_type)
             
-            print("Index of FROM dropdown: ", self.dropdown_from_idx)
-            
-            if self.dropdown_from_idx == 0:
-                pass
-            elif self.dropdown_from_idx == 3:
-                self.key_from_dropdowns[self.dropdown_from_idx].set('')
-                self.dropdown_from_idx -= 1
-            else: # 1 or 2
-                self.key_from_dropdowns[self.dropdown_from_idx].set('')
-                self.key_from_dropdowns[self.dropdown_from_idx].pack_forget()
-                self.dropdown_from_idx -= 1
-                self.key_from_dropdowns[self.dropdown_from_idx].set('')
+    def update_dropdowns(self, key_type):
+        
+        if self.dropdown_idx[key_type] == 4:
+            pass
+        
+        else:
+            for i in range(0, self.dropdown_idx[key_type]+1):
+                self.dropdown_lists[key_type][i].pack(side=tk.LEFT, padx=5, pady=5)
                 
-            print("Index of FROM dropdown after changes have been applied: ", self.dropdown_from_idx)
-            print()
-            
-        elif key_type == 'to':
-            
-            print("Index of TO dropdown: ", self.dropdown_to_idx)
-            
-            if self.dropdown_to_idx == 0:
+            if self.dropdown_idx[key_type] == 3:
+                self.dropdown_lists[key_type][3].set('')
+                
+            try:  # try is used b/c this isn't needed starting for dropdown_idx == 3
+                for i in range(self.dropdown_idx[key_type] + 1, 4):
+                    self.dropdown_lists[key_type][i].set('')
+                    self.dropdown_lists[key_type][i].pack_forget()
+                    self.dropdown_lists[key_type][i-1].set('')
+            except:
                 pass
-            elif self.dropdown_to_idx == 3:
-                self.key_to_dropdowns[self.dropdown_to_idx].set('')
-                self.dropdown_to_idx -= 1
-            else:
-                self.key_to_dropdowns[self.dropdown_to_idx].set('')
-                self.key_to_dropdowns[self.dropdown_to_idx].pack_forget()
-                self.dropdown_to_idx -= 1
-                self.key_to_dropdowns[self.dropdown_to_idx].set('')
-                
-            print("Index of TO dropdown after changes have been applied: ", self.dropdown_to_idx)
-            print()
-
-    def delete_last_from_dropdown(self):
-        visible_from_dropdowns = [dropdown for dropdown in self.key_from_dropdowns if dropdown.winfo_ismapped()]
-        if len(visible_from_dropdowns) > 1:
-            
-            # if the list is full, empty the last dropdown without deleting it
-            if len(visible_from_dropdowns) == 4:
-                last_dropdown = visible_from_dropdowns[-1]
-                idx = self.key_from_dropdowns.index(last_dropdown)
-                self.key_from_vars[idx].set('')
-                
-            
-            else:
-                last_dropdown = visible_from_dropdowns[-1]
-                last_dropdown.pack_forget()
-                idx = self.key_from_dropdowns.index(last_dropdown)
-                self.key_from_vars[idx].set('')
-
-    def delete_last_to_dropdown(self):
-        visible_to_dropdowns = [dropdown for dropdown in self.key_to_dropdowns if dropdown.winfo_ismapped()]
-        if len(visible_to_dropdowns) > 1:
-            last_dropdown = visible_to_dropdowns[-1]
-            last_dropdown.pack_forget()
-            idx = self.key_to_dropdowns.index(last_dropdown)
-            self.key_to_vars[idx].set('')
 
     def add_shortcut(self):
-        keys_from = [var.get() for var in self.key_from_vars if var.get()]
-        keys_to = [var.get() for var in self.key_to_vars if var.get()]
+        keys_from = []
+        keys_to = []
+        
+        for i in range(0, self.dropdown_idx[0]):
+            keys_from.append(self.dropdown_lists[0][i].get())
+            
+        for i in range(0, self.dropdown_idx[1]):
+            keys_to.append(self.dropdown_lists[1][i].get())
 
         if not keys_from or not keys_to:
             messagebox.showwarning("Input Error", "Please select keys for both from and to combinations.")
