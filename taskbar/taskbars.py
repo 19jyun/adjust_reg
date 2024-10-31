@@ -8,7 +8,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from reboot_prompt import prompt_reboot
 from PIL import Image, ImageTk
 import numpy as np
-from configuration_manager import ScreenInfo
 import pywinstyles
 from widgets.button import BouncingButton
 from widgets.sliding_frames import SlidingFrame
@@ -57,12 +56,13 @@ class TaskbarView(SlidingFrame):
 
         # Use the values retrieved from the registry for initial settings
         self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.current_values["TaskbarLength"])
-        self.current_transparency = int(255 * (self.current_values["TaskbarTransparency"] / 100))  # Use initial transparency value
+                
+        self.current_transparency = 1  # Use initial transparency value
         self.label_position = 0 if self.current_values["Position"] == self.taskbar_positions["Top"] else None
         
+        self.setup_image()
         self.setup_ui()
-        
-        self.update_image()
+        self.apply_initial_image_state()
             
     def get_dropdown_key(self, mapping, value):
         """Retrieve the key (label) for a given value in a dictionary."""
@@ -72,7 +72,6 @@ class TaskbarView(SlidingFrame):
         return list(mapping.keys())[0]  # Return first key as fallback if no match
 
     def setup_ui(self):
-        self.setup_image()
         # Create taskbar length slider and entry
         self.create_slider("Taskbar Length", self.max_taskbar_size, "entry_taskbar_length", "slider_taskbar_length", self.current_values["TaskbarLength"])
 
@@ -115,8 +114,6 @@ class TaskbarView(SlidingFrame):
         btn_back = BouncingButton(frame_buttons, text="Back", command=self.controller.wrap_command(self.controller.go_back))
         btn_back.pack(pady=5)
         
-        self.update_image()
-        
     def setup_image(self):
         """Load and display the background and taskbar images with CTkImage."""
 
@@ -151,46 +148,45 @@ class TaskbarView(SlidingFrame):
 
         self.label_height_position = background_image_height - taskbar_height
         
-    def update_image(self, source=None):
-        """Updates the taskbar overlay on the background based on the user inputs for position, length, and transparency."""
-
-        # Initialize variables to store current states if they don't exist
-        if source is None:
-            self.current_transparency = int(255 * (self.current_values["TaskbarTransparency"] / 100))
-            self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.current_values["TaskbarLength"])
-            self.current_height = self.taskbar_image_resized.height
-            self.label_position = 0 if self.current_values["Position"] == self.taskbar_positions["Top"] else self.background_image_resized.height - self.current_height
-
-        else :
-            # Only update the relevant value based on the source
-            if source == "slider_taskbar_length" or source == "entry_taskbar_length":
-                # Calculate new taskbar width based on the slider value
-                self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.slider_taskbar_length.get())
-            elif source == "slider_taskbar_transparency" or source == "entry_taskbar_transparency":
-                # Calculate and store the transparency value
-                self.current_transparency = int(255 * (self.slider_taskbar_transparency.get() / self.max_taskbar_transparency))  # Alpha value (0-255)
-            elif source == "position_dropdown":
-                self.label_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.current_height
-
-        # Apply the updates to the image and label at the end
-        # 1. Resize the taskbar image based on the current width and height
-        self.taskbar_image_resized = self.taskbar_image.resize((self.current_width, self.current_height), Image.Resampling.LANCZOS)
-
-        # 2. Apply the current transparency to the taskbar image
-        taskbar_rgba = self.taskbar_image_resized.convert("RGBA")
-        data = np.array(taskbar_rgba)
-        self.taskbar_image_resized = Image.fromarray(data)
-
-        # 3. Convert to a CTkImage and update the label image
-        self.taskbar_image_ctk = ctk.CTkImage(self.taskbar_image_resized, size=(self.current_width, self.current_height))
-        self.label_taskbar_img.configure(image=self.taskbar_image_ctk, width=self.current_width, height=self.current_height, fg_color="transparent")
-
-        # 4. Position the label based on the updated x and y values
-        self.xa = (self.screen_info.window_width - self.current_width) // 2
-        self.label_taskbar_img.place(x=self.xa, y=self.label_position)
-
+    def apply_initial_image_state(self):
+        """Apply initial settings to the taskbar image based on current values."""
+        self.resize_taskbar_image()
+        self.position_taskbar_image()
         pywinstyles.set_opacity(self.label_taskbar_img.winfo_id(), self.current_transparency)
-            
+        
+    def resize_taskbar_image(self):
+        """Resize the taskbar image based on the current width and height."""
+        self.taskbar_image_resized = self.taskbar_image.resize(
+            (self.current_width, self.taskbar_image_resized.height), 
+            Image.Resampling.LANCZOS
+        )
+        self.taskbar_image_ctk = ctk.CTkImage(self.taskbar_image_resized, size=(self.current_width, self.taskbar_image_resized.height))
+        self.position_taskbar_image()
+
+    def position_taskbar_image(self):
+        """Position the taskbar image within the label based on user selection."""
+        self.xa = (self.screen_info.window_width - self.current_width) // 2
+        self.label_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.taskbar_image_resized.height
+        self.label_taskbar_img.place(x=self.xa, y=self.label_position)
+        self.label_taskbar_img.configure(image=self.taskbar_image_ctk, width=self.current_width, height=self.taskbar_image_resized.height, fg_color="transparent")
+        
+    def update_image(self, source=None):
+        """Main update method that applies only the necessary updates based on the source."""
+        if source == "slider_taskbar_length" or source == "entry_taskbar_length":
+            self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.slider_taskbar_length.get())
+            self.resize_taskbar_image()
+
+        elif source == "slider_taskbar_transparency" or source == "entry_taskbar_transparency":
+            # Update the transparency on the label itself, not the image
+            self.current_transparency = int(255 * (self.slider_taskbar_transparency.get() / self.max_taskbar_transparency))
+            pywinstyles.set_opacity(self.label_taskbar_img.winfo_id(), self.current_transparency)
+
+        elif source == "position_dropdown":
+            self.position_taskbar_image()
+        
+        # Update the UI with the new image state
+        self.label_taskbar_img.configure(image=self.taskbar_image_ctk, width=self.current_width, height=self.taskbar_image_resized.height, fg_color="transparent")            
+    
     def create_slider(self, label_text, max_value, entry_name, slider_name, initial_value=None):
         """Create a slider and an entry that are synchronized."""
         label = ctk.CTkLabel(self.scrollable_frame, text=label_text)
@@ -402,4 +398,3 @@ class TaskbarView(SlidingFrame):
             print(f"Error reading registry values from Taskband: {e}")
 
         return taskbar_values
-
