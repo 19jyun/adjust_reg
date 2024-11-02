@@ -32,28 +32,22 @@ class KeyShortcutsView(SlidingFrame):
         self.available_keys = self.get_available_keys()
         self.shortcut_mappings = []  # To display in the UI
 
-        scroll_width = self.screen_info.window_width
-        scroll_height = self.screen_info.window_height
+        padding_x, padding_y = self.screen_info.padding_x, self.screen_info.padding_y
+
+        scroll_width = self.screen_info.window_width - 2 * self.screen_info.padding_x
+        scroll_height = self.screen_info.window_height - 2 * self.screen_info.padding_y
+        
         self.container_frame = ctk.CTkScrollableFrame(self, width=scroll_width, height=scroll_height)
-        self.container_frame.pack(fill="both", expand=True)
+        self.container_frame.pack(fill="both", expand=True, padx=padding_x, pady=padding_y)
+
 
         # Define dropdown and button dimensions
         self.dropdown_width = (scroll_width - 20) // 4
         self.button_width = (scroll_width - 20) // 3
-        
-        # number of selected dropdowns
-        # if 0, only one blank dropdown is displayed
-        # if 1, two dropdowns (1 blank, 1 selected) are displayed
-        # if 2, three dropdowns (1 blank, 2 selected) are displayed
-        # if 3, four dropdowns (1 blank, 3 selected) are displayed
-        # if 4, four dropdowns (all selected) are displayed
-
+    
         self.dropdown_idx = [0, 0]
         
-
-
         self.setup_ui()
-        self.update_idletasks()
         self.load_settings_and_shortcuts()
 
     def get_available_keys(self):
@@ -212,9 +206,7 @@ class KeyShortcutsView(SlidingFrame):
             increment = 1
         elif caller == 'button':
             increment = -1
-    
-        print("Called from: ", caller)
-        
+            
         if self.dropdown_idx[key_type] == 4 and caller == 'dropdown': # already full
             pass
         elif self.dropdown_idx[key_type] == 0 and caller == 'button': # already empty

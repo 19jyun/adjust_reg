@@ -34,6 +34,9 @@ class ScreenInfo:
         self.window_width = 0
         self.window_height = 0
         
+        self.padding_x = 10
+        self.padding_y = 10
+        
         self.dpi = self.get_scaling_factor()
         self.taskbar_height = self.get_taskbar_height()
         

@@ -23,10 +23,14 @@ class SettingsView(SlidingFrame):
         super().__init__(parent, width=self.screen_info.window_width, height=self.screen_info.window_height)
         self.controller = controller
         
-        scroll_width = self.screen_info.window_width
-        scroll_height = self.screen_info.window_height
+        padding_x, padding_y = self.screen_info.padding_x, self.screen_info.padding_y
+
+        scroll_width = self.screen_info.window_width - 2 * self.screen_info.padding_x
+        scroll_height = self.screen_info.window_height - 2 * self.screen_info.padding_y
+        
         self.scrollable_frame = ctk.CTkScrollableFrame(self, width=scroll_width, height=scroll_height)
-        self.scrollable_frame.pack(fill="both", expand=True)
+        self.scrollable_frame.pack(fill="both", expand=True, padx=padding_x, pady=padding_y)
+
         
         # Load settings.json
         self.settings = self.load_settings()

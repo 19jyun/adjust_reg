@@ -60,12 +60,14 @@ class KeyRemapView(SlidingFrame):
 
         # Store the remapped keys
         self.remapped_keys = []
+        padding_x, padding_y = self.screen_info.padding_x, self.screen_info.padding_y
 
-        # Create a main container frame using 90% of the parent dimensions
-        scroll_width = self.screen_info.window_width
-        scroll_height = self.screen_info.window_height
+        scroll_width = self.screen_info.window_width - 2 * self.screen_info.padding_x
+        scroll_height = self.screen_info.window_height - 2 * self.screen_info.padding_y
+        
         self.container_frame = ctk.CTkScrollableFrame(self, width=scroll_width, height=scroll_height)
-        self.container_frame.pack(fill="both", expand=True)  # Center the container frame within the parent
+        self.container_frame.pack(fill="both", expand=True, padx=padding_x, pady=padding_y)
+
 
         # Layout
         self.setup_ui()
