@@ -167,7 +167,7 @@ class TaskbarView(SlidingFrame):
         """Position the taskbar image within the label based on user selection."""
         
         frame_width = self.scrollable_frame.winfo_width()
-        x_center = (frame_width - self.current_width) // 2
+        x_center = (frame_width//self.screen_info.dpi - self.current_width) // 2
         y_position = 0
         try:
             y_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.taskbar_image_resized.height
