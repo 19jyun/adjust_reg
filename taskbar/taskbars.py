@@ -165,11 +165,16 @@ class TaskbarView(SlidingFrame):
 
     def position_taskbar_image(self):
         """Position the taskbar image within the label based on user selection."""
+        
+        frame_width = self.scrollable_frame.winfo_width()
+        x_center = (frame_width - self.current_width) // 2
+        y_position = 0
         try:
-            self.label_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.taskbar_image_resized.height
+            y_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.taskbar_image_resized.height
         except:
-            self.label_position = 0 if self.current_values["Position"] == self.taskbar_positions["Top"] else self.background_image_resized.height - self.taskbar_image_resized.height
-        self.label_taskbar_img.place(x=self.scrollable_frame.winfo_width()//2 - self.current_width//2, y=self.label_position)
+            y_position = 0 if self.current_values["Position"] == self.taskbar_positions["Top"] else self.background_image_resized.height - self.taskbar_image_resized.height
+        
+        self.label_taskbar_img.place(x= x_center, y=y_position)
         self.label_taskbar_img.configure(image=self.taskbar_image_ctk, width=self.current_width, height=self.taskbar_image_resized.height, fg_color="transparent")
         
     def update_image(self, source=None):
