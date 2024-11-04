@@ -32,7 +32,7 @@ def start_main_tray_icon():
             TrayMenuItem('Restore', restore_application),
             TrayMenuItem('Quit', quit_application)
         )
-        tray_icon = TrayIcon("Trackpad Registry Manager", image, menu=menu)
+        tray_icon = TrayIcon("MyWindows", image, menu=menu)
         tray_icon.run_detached()  # Detach so that it runs in the background
     else:
         print("Could not create tray icon due to missing image.")

@@ -59,10 +59,10 @@ class TaskbarView(SlidingFrame):
         # Use the values retrieved from the registry for initial settings
         self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.current_values["TaskbarLength"])
                 
-        self.current_transparency = 1  # Use initial transparency value
+        self.current_transparency = self.current_values["TaskbarTransparency"]  # Use initial transparency value
         self.label_position = 0 if self.current_values["Position"] == self.taskbar_positions["Top"] else None
         
-        self.after(200, self.setup_image())
+        self.after(500, self.setup_image())
             
     def get_dropdown_key(self, mapping, value):
         """Retrieve the key (label) for a given value in a dictionary."""
@@ -144,11 +144,10 @@ class TaskbarView(SlidingFrame):
         self.label_background_img = ctk.CTkLabel(self.scrollable_frame, image=self.background_image_ctk, text="", width=background_image_width, height=background_image_height)
         self.label_taskbar_img = ctk.CTkLabel(self.scrollable_frame, image=self.taskbar_image_ctk, text="", width=taskbar_width, height=taskbar_height, fg_color="transparent")
         self.label_background_img.pack()
-        self.after(200, self.resize_taskbar_image())
+        self.after(1000, self.update_image())
         
-        #self.update_image()
         self.setup_ui()
-             
+                     
     def apply_initial_image_state(self):
         """Apply initial settings to the taskbar image based on current values."""
         self.resize_taskbar_image()
@@ -166,17 +165,17 @@ class TaskbarView(SlidingFrame):
 
     def position_taskbar_image(self):
         """Position the taskbar image within the label based on user selection."""
-        frame_width = self.scrollable_frame.winfo_width()  # Dynamic frame width
-        self.xa = (frame_width - self.current_width) // 2  # Centered position
-
         try:
             self.label_position = 0 if self.position_var.get() == "Top" else self.background_image_resized.height - self.taskbar_image_resized.height
         except:
             self.label_position = 0 if self.current_values["Position"] == self.taskbar_positions["Top"] else self.background_image_resized.height - self.taskbar_image_resized.height
-        self.label_taskbar_img.place(x=self.xa, y=self.label_position)
+        self.label_taskbar_img.place(x=self.scrollable_frame.winfo_width()//2 - self.current_width//2, y=self.label_position)
         self.label_taskbar_img.configure(image=self.taskbar_image_ctk, width=self.current_width, height=self.taskbar_image_resized.height, fg_color="transparent")
         
     def update_image(self, source=None):
+        
+        self.update_idletasks()
+        
         """Main update method that applies only the necessary updates based on the source."""
         if source == "slider_taskbar_length" or source == "entry_taskbar_length":
             self.current_width = int((self.screen_info.window_width * 0.8) / 100 * self.slider_taskbar_length.get())
@@ -368,7 +367,7 @@ class TaskbarView(SlidingFrame):
             "ShowClock": None,
             "TaskbarGlomLevel": None,
             "MinThumbSizePx": None,
-            "TaskbarTransparency": 1,
+            "TaskbarTransparency": 50,
             "TaskbarLength": 100
         }
 
