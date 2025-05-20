@@ -126,9 +126,6 @@ Trackpad
 Keyboard
 - Disabling certain keys - Not started (probably add it to Keymapping?)
 
-알트탭 고쳐야됨
-
-
 Battery discharge rate
 - Change polling rate - should be done in settings?
 
@@ -163,25 +160,12 @@ minimize instead of quit could replace this option maybe (check on resource usag
 --> 가급적이면 백그라운드 프로세스로 인식되도록 다른 쓰레드를 활용
 
 **Update Image doesn't produce expected results**
-- taskbar 자꾸 투명하게 나옴, 클릭하면 바로 고쳐짐
-- 사실 큰 버그도 아니고 그냥 냅두는게 정신건강에 이로울듯
+- Bugs regarding taskbar looking transparent
 
 **키보드 shortcut 활성화 비활성화**
--이건 구현 완료했음 (switch on 인 상태로 시작되면 색상이 이상해지는 버그 존재)
+- Works as expected, but bugs regarding color of the custom switch
 
-이 두 버그 제외하곤 괜츈한듯?
+**keyboard hotkey + battery discharge rate feature should launch at boot, if wanted by the user**
 
-**키보드 단축키 리매핑은 따로 구현해놓고, enable 그 설정 true로 되어있으면 컴퓨터 부팅시 자동시작해서 바로 자동으로 키보드 매핑되도록 설정할것**
-
-**가능하면 위 기능 배터리에도 똑같이 적용**
-
-_______________
-
-
-
-Attribution: The only requirement of the MIT License is that you must include the original license notice in your project. This means that if you distribute your software (whether for free or for profit), you need to provide credit to the original author of CustomTkinter, typically by including a copy of the license in your product’s documentation.
-
-
-MIT License attribute 해야됨 커스팀 tkinter 쓸꺼면
 ______________
 
